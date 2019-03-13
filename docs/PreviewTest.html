@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<style>
+* {
+    font-family: sans-serif;
+    line-height: 1.7;
+}
+
+div.source, div.preview {
+    width: calc(50% - 50px);  
+    padding: 20px;
+
+    color: #101004;
+    background-color: #fff4f4;
+}
+
+div.source {
+    display: flex;
+    flex-direction: column;
+
+    position: fixed;
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+
+    float: left;
+}
+
+div.preview {
+    float: right;
+}
+
+#previewArea {
+    word-wrap: break-word;
+}
+
+textarea {
+    width: calc(100% - 6px);
+    flex: 1;
+
+    background-color: #e0efef;
+    font-size: 16px;
+}
+</style>
+
+<style>
+span {
+    margin: 0px;
+    padding: 0px;
+}
+
+span.red {
+    color: #ff0000;
+}
+
+span.orange {
+    color: #ff9900;
+}
+
+span.water {
+    color: #00ffff;
+}
+
+span.blue {
+    color: #00ffff;
+}
+
+span.yellowgreen {
+    color: #00ff00;
+}
+
+span.yellow {
+    color: #ffff00;
+}
+
+span.green {
+    color: #339900;
+}
+
+span.purple {
+    color: #6633cc;
+}
+
+span.pink {
+    color: #ff66ff;
+}
+
+span.gray {
+    color: #999999;
+}
+
+span.big {
+    font-size: xx-large;
+}
+
+span.mediam {
+    font-size: x-large;
+}
+
+span.small {
+    font-size: xx-small;
+}
+
+
+table {
+    min-width: 100%;
+    border-collapse: collapse;
+    background-color: #202010;
+    color: #f4f4f4;
+
+    text-align: left;
+    word-break: keep-all;
+}
+
+.overflow {
+    overflow: scroll;
+}
+
+th, td {
+    padding: 1em;
+} 
+
+tr {
+    border-top: 1px solid #afafa0;
+}
+
+tr:first-child {
+    border-top: none;
+} 
+
+
+h2 {
+    padding: 0.25em 0.5em;
+    border: 1px solid #850608;
+    border-radius: 10px;
+
+    background-color: #952628;
+    color: #f4f4f4;
+}
+
+h3 {
+    padding: 0.25em 0.5em;
+    border-bottom: 1px solid #850608;
+}
+
+hr {
+    margin: 1em 0px;
+    padding: 0px;
+
+    border: none;
+    border-top: 2px dashed #8c8b8b;
+}
+
+pre {
+    padding: 1em;
+
+    border: 1px solid #8c8b8b;
+    border-radius: 3px;
+
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9em;
+
+    overflow: auto;
+}
+
+a {
+  color: #21c87a;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #168652;
+  text-decoration: none;
+}
+</style>
+
+<body>
+    <div class='container'>
+        <div class='source'>
+            <div>Source</div>
+            <textarea id='previewSource'></textarea>
+        </div>
+        <div class='preview'>
+            <div>Preview</div>
+            <div id='previewArea'></div>
+        </div>
+    </div>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type='text/javascript'>
+    $(document).ready(() => {
+        $('#previewSource').on('input', (e) => {
+            let inputText = e.target.value;
+
+            // htmlエスケープ
+            const escapeList = {
+                '&': '&amp;',
+                "'": '&#x27;',
+                '"': '&quot;',
+                '<': '&lt;',
+                '>': '&gt;'
+            };
+
+            let escapedText = inputText.replace(/[&<>"']/g, (match) => escapeList[match]); 
+
+            // ぱとぇタグの変換
+            const tagList = {
+                '[リンク:': '<a href="',
+                ':リンク]': '" target="_blank" rel="noopener noreferrer">',
+                '[/リンク]': '</a>',
+
+                '[画像:': '<img src="',
+                ':画像]': '">',
+                '[/画像]': '</img>',
+
+                '[赤]': '<span class="red">',
+                '[/赤]': '</span>',
+                '[橙]': '<span class="orange">',
+                '[/橙]': '</span>',
+                '[水色]': '<span class="water">',
+                '[/水色]': '</span>',
+                '[青]': '<span class="blue">',
+                '[/青]': '</span>',
+                '[黄緑]': '<span class="yellowgreen">',
+                '[/黄緑]': '</span>',
+                '[黄]': '<span class="yellow">',
+                '[/黄]': '</span>',
+                '[緑]': '<span class="green">',
+                '[/緑]': '</span>',
+                '[紫]': '<span class="purple">',
+                '[/紫]': '</span>',
+                '[桃]': '<span class="pink">',
+                '[/桃]': '</span>',
+                '[灰]': '<span class="gray">',
+                '[/灰]': '</span>',
+                '[色:': '<span style="color:',
+                ':色]': '">',
+                '[/色]': '</span>',
+
+                '[大]': '<span class="big">',
+                '[/大]': '</span>',
+                '[中]': '<span class="mediam">',
+                '[/中]': '</span>',
+                '[小]': '<span class="small">',
+                '[/小]': '</span>',
+
+                '[見出]': '<h2>',
+                '[/見出]': '</h2>',
+                '[小見出]': '<h3>',
+                '[/小見出]': '</h3>',
+                '[太]': '<strong>',
+                '[/太]': '</strong>',
+
+                '[テーブル]': '<div class="overflow"><table><tbody>',
+                '[/テーブル]': '</tbody></table></div>',
+                '[th]': '<th>',
+                '[/th]': '</th>',
+                '[tr]': '<tr>',
+                '[/tr]': '</tr>',
+                '[td]': '<td>',
+                '[/td]': '</td>',
+
+                '[pre]': '<pre>',
+                '[/pre]': '</pre>',
+                '[罫線]': '<hr>',
+                '[/罫線]': ' '
+            };
+
+            const replacer = (match, p1, p2, p3) => {
+                if ((p1 === '[[' || p1 === '::') && (p3 === ']]' || p3 === '::')) {
+                    return [p1[0], p2, p3[0]].join('');
+                } else {
+                    return tagList[match] || match;
+                }
+            };
+
+            let taggedText = escapedText.replace(
+                /(\[{1,2})([^:\[\]]+)([:\]]{1,2})/g,
+                replacer
+            );
+            // /([:\[]{1,2})([^:\[\]]+)([:\]]{1,2})/g としても
+            // :**]のタグがうまく置換できないので別に処理
+            taggedText = taggedText.replace(
+                /(:{1,2})([^:\[\]]+)(\]{1,2})/g,
+                replacer
+            );
+
+            // 改行の後始末
+            let arrangedText = taggedText.replace(/ _\n/g, '');
+            arrangedText = arrangedText.replace(/(\[改行\]|\n)/g, '<br>');
+            $('#previewArea').html(arrangedText);
+        });
+    });
+</script>
+
+</html>
