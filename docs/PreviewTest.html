@@ -370,10 +370,10 @@ const HTMLTagList = {
 
             if (!ignoredColors.includes(fontColor)) {
                 return [ '[色:' + hexColorFromRGBColor(node.style.color) + ':色]', '[/色]' ];
-            } else {
-                return [ '', '' ];
             }
         }
+
+        return [ '', '' ];
     },
 
     // ぱとぇさん側のタグのサポート
