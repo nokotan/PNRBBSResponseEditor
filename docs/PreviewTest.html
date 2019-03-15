@@ -152,7 +152,7 @@ table {
     border-collapse: collapse;
     background-color: #202010;
     color: #f4f4f4;
-
+    caret-color: #f4f4f4;
     text-align: left;
     /* word-break: keep-all; */
 }
@@ -308,7 +308,9 @@ const patoleTagList = {
     '[pre]': '<pre>',
     '[/pre]': '</pre>',
     '[罫線]': '<hr>',
-    '[/罫線]': ' '
+    '[/罫線]': ' ',
+
+    '[改行]': '<br>'
 };
 
 const HTMLTagList = {
@@ -316,7 +318,7 @@ const HTMLTagList = {
     'IMG': (node) => [ '[画像:' + node.src + ':画像]', '[/画像]' ],
 
     'H2': (node) => [ '[見出]', '[/見出]' ],
-    'H3': (node) => [ '[/小見出]', '[/小見出]' ],
+    'H3': (node) => [ '[小見出]', '[/小見出]' ],
 
     'TABLE': (node) => [ '[テーブル]', '[/テーブル]' ],
     'TR': (node) => [ '[tr]', '[/tr]' ],
@@ -451,7 +453,7 @@ const HTMLTagList = {
 
             // 改行の後始末
             let arrangedText = taggedText.replace(/ _\n/g, '');
-            arrangedText = arrangedText.replace(/(\[改行\]|\n)/g, '<br>');
+            arrangedText = arrangedText.replace(/\n/g, '<br>');
             $('#previewArea').html(arrangedText);
 
             window.setTimeout(() => { 
@@ -482,17 +484,37 @@ const HTMLTagList = {
         });
 
         $('#previewArea').on('input', (e) => {
+            const replacer = (match, p1, p2, p3) => {
+                if (patoleTagList[match]) {
+                    return p1 + match + p3;
+                } else {
+                    return match;
+                }
+            };
+
             const stringify = (parentNode) => {
                 switch (parentNode.nodeType) {
-                case Node.ELEMENT_NODE: {
-                    let tagConverter = HTMLTagList[parentNode.tagName] || ((n) => [ '', '' ]);
-                    let tag = tagConverter(parentNode);
-                    let childList = Array.from(parentNode.childNodes)
-                    let childStringified = childList.map(n => stringify(n));
-                    return tag[0] + childStringified.join('') + tag[1];
-                }
-                case Node.TEXT_NODE:
-                    return parentNode.nodeValue;
+                    case Node.ELEMENT_NODE: {
+                        let tagConverter = HTMLTagList[parentNode.tagName] || ((n) => [ '', '' ]);
+                        let tag = tagConverter(parentNode);
+                        let childList = Array.from(parentNode.childNodes)
+                        let childStringified = childList.map(n => stringify(n));
+                        return tag[0] + childStringified.join('') + tag[1];
+                    }
+                    case Node.TEXT_NODE: {
+                        let escapedText = parentNode.nodeValue.replace(
+                            /(\[)([^:\[\]]+)([:\]])/g,
+                            replacer
+                        );
+
+                        // :**]のタグがうまく置換できないので別に処理
+                        escapedText = escapedText.replace(
+                            /(\:)([^:\[\]]+)(\])/g,
+                            replacer
+                        );
+
+                        return escapedText;
+                    }
                 }
             };
 
@@ -518,6 +540,9 @@ const HTMLTagList = {
 
             return false; */
         });
+
+        // 改行を br に強制する
+        document.execCommand("defaultParagraphSeparator", false, "br");
     });
 </script>
 
