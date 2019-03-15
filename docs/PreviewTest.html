@@ -243,6 +243,178 @@ a:hover {
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script type='text/javascript'>
+// ぱとぇタグの変換表
+const patoleTagList = {
+    '[リンク:': '<a href="',
+    ':リンク]': '" target="_blank" rel="noopener noreferrer">',
+    '[/リンク]': '</a>',
+
+    '[画像:': '<img src="',
+    ':画像]': '">',
+    '[/画像]': '</img>',
+
+    '[赤]': '<span class="red">',
+    '[/赤]': '</span>',
+    '[橙]': '<span class="orange">',
+    '[/橙]': '</span>',
+    '[水色]': '<span class="water">',
+    '[/水色]': '</span>',
+    '[青]': '<span class="blue">',
+    '[/青]': '</span>',
+    '[黄緑]': '<span class="yellowgreen">',
+    '[/黄緑]': '</span>',
+    '[黄]': '<span class="yellow">',
+    '[/黄]': '</span>',
+    '[緑]': '<span class="green">',
+    '[/緑]': '</span>',
+    '[紫]': '<span class="purple">',
+    '[/紫]': '</span>',
+    '[桃]': '<span class="pink">',
+    '[/桃]': '</span>',
+    '[灰]': '<span class="gray">',
+    '[/灰]': '</span>',
+    '[色:': '<span style="color:',
+    ':色]': '">',
+    '[/色]': '</span>',
+
+    '[大]': '<span class="big">',
+    '[/大]': '</span>',
+    '[中]': '<span class="mediam">',
+    '[/中]': '</span>',
+    '[小]': '<span class="small">',
+    '[/小]': '</span>',
+
+    '[打消]': '<span class="strike">',
+    '[/打消]': '</span>',
+    '[下線]': '<span class="underline">',
+    '[/下線]': '</span>',
+
+    '[見出]': '<h2>',
+    '[/見出]': '</h2>',
+    '[小見出]': '<h3>',
+    '[/小見出]': '</h3>',
+    '[太]': '<strong>',
+    '[/太]': '</strong>',
+
+    '[テーブル]': '<table>',
+    '[/テーブル]': '</table>',
+    '[th]': '<th>',
+    '[/th]': '</th>',
+    '[tr]': '<tr>',
+    '[/tr]': '</tr>',
+    '[td]': '<td>',
+    '[/td]': '</td>',
+
+    '[pre]': '<pre>',
+    '[/pre]': '</pre>',
+    '[罫線]': '<hr>',
+    '[/罫線]': ' '
+};
+
+const HTMLTagList = {
+    'A': (node) => [ '[リンク:' + node.href + ':リンク]', '[/リンク]' ],
+    'IMG': (node) => [ '[画像:' + node.src + ':画像]', '[/画像]' ],
+
+    'H2': (node) => [ '[見出]', '[/見出]' ],
+    'H3': (node) => [ '[/小見出]', '[/小見出]' ],
+
+    'TABLE': (node) => [ '[テーブル]', '[/テーブル]' ],
+    'TR': (node) => [ '[tr]', '[/tr]' ],
+    'TH': (node) => [ '[th]', '[/th]' ],
+    'TD': (node) => [ '[td]', '[/td]' ],
+
+    'STRONG': (node) => [ '[太]', '[/太]' ],
+    'PRE': (node) => [ '[pre]', '[/pre]' ],
+    'HR': (node) => [ '[罫線]', '[/罫線]' ],
+    'BR': (node) => [ '\n', '' ],
+
+    'SPAN': (node) => {
+        const classList = {
+            'red': ['[赤]', '[/赤]'],
+            'orange': ['[橙]', '[/橙]'],
+            'water': ['[水色]', '[/水色]'],
+            'blue': ['[青]', '[/青]'],
+            'yellowgreen': ['[黄緑]', '[/黄緑]'],
+            'yellow': ['[黄]', '[/黄]'],
+            'green': ['[緑]', '[/緑]'],
+            'purple': ['[紫]', '[/紫]'],
+            'pink': ['[桃]', '[/桃]'],
+            'gray': ['[灰]', '[/灰]'],
+
+            'big': ['[大]', '[/大]'],
+            'mediam': ['[中]', '[/中]'],
+            'small': ['[小]', '[/小]'],
+
+            'strike': ['[打消]', '[/打消]'],
+            'underline': ['[下線]', '[/下線]'],
+        };
+
+        if (node.className) {
+            return classList[node.className] || [ '', '' ];
+        } else if (node.style && node.style.color) {
+            // from https://stackoverflow.com/questions/1740700/how-to-get-hex-color-value-rather-than-rgb-value
+            const hexColorFromRGBColor = (rgb) => {
+                if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
+
+                rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+                const hex = (x) => ('0' + parseInt(x).toString(16)).slice(-2);
+
+                return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+            };
+
+            const ignoredColors = [ 
+                '#212529' // ぱとぇさんの掲示板のデフォルトの文字色
+            ];
+
+            let fontColor = hexColorFromRGBColor(node.style.color);
+
+            if (!ignoredColors.includes(fontColor)) {
+                return [ '[色:' + hexColorFromRGBColor(node.style.color) + ':色]', '[/色]' ];
+            } else {
+                return [ '', '' ];
+            }
+        }
+    },
+
+    // ぱとぇさん側のタグのサポート
+    'H4': (node) => [ '[見出]', '[/見出]' ],
+
+    'U': (node) => [ '[下線]', '[/下線]' ],
+    'S': (node) => [ '[打消]', '[/打消]' ],
+    'DEL': (node) => [ '[打消]', '[/打消]' ],
+
+    'FONT': (node) => {
+        if (node.hasAttribute('size')) {
+            let fontSize = node.getAttribute('size');
+            const fontSizeList = {
+                '1': ['[小]', '[/小]'],
+                '5': ['[中]', '[/中]'],
+                '6': ['[大]', '[/大]'],
+            };
+
+            return fontSizeList[fontSize] || [ '', '' ];
+        } else if (node.hasAttribute('color')) {
+            let fontColor = node.getAttribute('color');
+
+            const knownColors = {
+                '#FF0000': ['[赤]', '[/赤]'],
+                '#FF9900': ['[橙]', '[/橙]'],
+                '#00FFFF': ['[水色]', '[/水色]'],
+                '#00FFFF': ['[青]', '[/青]'],
+                '#00FF00': ['[黄緑]', '[/黄緑]'],
+                '#FFFF00': ['[黄]', '[/黄]'],
+                '#339900': ['[緑]', '[/緑]'],
+                '#6633CC': ['[紫]', '[/紫]'],
+                '#FF66FF': ['[桃]', '[/桃]'],
+                '#999999': ['[灰]', '[/灰]'],
+            };
+
+            return knownColors[fontColor] || [ '[色:' + fontColor + ':色]', '[/色]' ];
+        }
+    },
+};
+</script>
+<script type='text/javascript'>
     $(document).ready(() => {
         const updatePreview = (inputText) => {
             let previousScroll = $(window).scrollTop();
@@ -258,79 +430,11 @@ a:hover {
 
             let escapedText = inputText.replace(/[&<>"']/g, (match) => escapeList[match]); 
 
-            // ぱとぇタグの変換
-            const tagList = {
-                '[リンク:': '<a href="',
-                ':リンク]': '" target="_blank" rel="noopener noreferrer">',
-                '[/リンク]': '</a>',
-
-                '[画像:': '<img src="',
-                ':画像]': '">',
-                '[/画像]': '</img>',
-
-                '[赤]': '<span class="red">',
-                '[/赤]': '</span>',
-                '[橙]': '<span class="orange">',
-                '[/橙]': '</span>',
-                '[水色]': '<span class="water">',
-                '[/水色]': '</span>',
-                '[青]': '<span class="blue">',
-                '[/青]': '</span>',
-                '[黄緑]': '<span class="yellowgreen">',
-                '[/黄緑]': '</span>',
-                '[黄]': '<span class="yellow">',
-                '[/黄]': '</span>',
-                '[緑]': '<span class="green">',
-                '[/緑]': '</span>',
-                '[紫]': '<span class="purple">',
-                '[/紫]': '</span>',
-                '[桃]': '<span class="pink">',
-                '[/桃]': '</span>',
-                '[灰]': '<span class="gray">',
-                '[/灰]': '</span>',
-                '[色:': '<span style="color:',
-                ':色]': '">',
-                '[/色]': '</span>',
-
-                '[大]': '<span class="big">',
-                '[/大]': '</span>',
-                '[中]': '<span class="mediam">',
-                '[/中]': '</span>',
-                '[小]': '<span class="small">',
-                '[/小]': '</span>',
-
-                '[打消]': '<span class="strike">',
-                '[/打消]': '</span>',
-                '[下線]': '<span class="underline">',
-                '[/下線]': '</span>',
-
-                '[見出]': '<h2>',
-                '[/見出]': '</h2>',
-                '[小見出]': '<h3>',
-                '[/小見出]': '</h3>',
-                '[太]': '<strong>',
-                '[/太]': '</strong>',
-
-                '[テーブル]': '<table>',
-                '[/テーブル]': '</table>',
-                '[th]': '<th>',
-                '[/th]': '</th>',
-                '[tr]': '<tr>',
-                '[/tr]': '</tr>',
-                '[td]': '<td>',
-                '[/td]': '</td>',
-
-                '[pre]': '<pre>',
-                '[/pre]': '</pre>',
-                '[罫線]': '<hr>',
-                '[/罫線]': ' '
-            };
-
             const replacer = (match, p1, p2, p3) => {
                 if ((p1 === '[[' || p1 === '::') && (p3 === ']]' || p3 === '::')) {
                     return [p1[0], p2, p3[0]].join('');
                 } else {
-                    return tagList[match] || match;
+                    return patoleTagList[match] || match;
                 }
             };
 
@@ -366,43 +470,23 @@ a:hover {
                     timerID = undefined;                
                     updatePreview(e.target.value);                
                 }, 1000);
+            } else {
+                shouldUpdate = false;
+                timerID = window.setTimeout(() => { 
+                    shouldUpdate = true;
+                    timerID = undefined;
+                }, 1000);
 
-                return;
+                updatePreview(e.target.value);
             }
-
-            shouldUpdate = false;
-            timerID = window.setTimeout(() => { 
-                shouldUpdate = true;
-                timerID = undefined;
-            }, 1000);
-
-            updatePreview(e.target.value);
         });
 
         $('#previewArea').on('input', (e) => {
-            const tagList = {
-                'A' : (node) => [ '[リンク:' + node.href + ':リンク]', '[/リンク]' ],
-                'IMG' : (node) => [ '[画像:' + node.src + ':画像]', '[/画像]' ],
-
-                'H2' : (node) => [ '[見出]', '[/見出]' ],
-                'H3' : (node) => [ '[/小見出]', '[/小見出]' ],
-
-                'TABLE' : (node) => [ '[テーブル]', '[/テーブル]' ],
-                'TR' : (node) => [ '[tr]', '[/tr]' ],
-                'TH' : (node) => [ '[th]', '[/th]' ],
-                'TD' : (node) => [ '[td]', '[/td]' ],
-
-                'PRE' : (node) => [ '[pre]', '[/pre]' ],
-                'HR' : (node) => [ '[罫線]', '[/罫線]' ],
-
-                'BR' : (node) => [ '\n', ' ' ],
-            };
-
             const stringify = (parentNode) => {
                 switch (parentNode.nodeType) {
                 case Node.ELEMENT_NODE: {
-                    let tagFunction = tagList[parentNode.tagName] || ((n) => [ '', '' ]);
-                    let tag = tagFunction(parentNode);
+                    let tagConverter = HTMLTagList[parentNode.tagName] || ((n) => [ '', '' ]);
+                    let tag = tagConverter(parentNode);
                     let childList = Array.from(parentNode.childNodes)
                     let childStringified = childList.map(n => stringify(n));
                     return tag[0] + childStringified.join('') + tag[1];
@@ -415,8 +499,10 @@ a:hover {
             $('#previewSource').val(stringify(e.target));
         }); 
 
-        /* $('#previewArea').on('paste', (e) => {
-            e.preventDefault();
+        $('#previewArea').on('paste', (e) => {
+            window.setTimeout(() => { updatePreview($('#previewSource').val()); }, 1000);
+
+            /* e.preventDefault();
             let pastedHTML = e.originalEvent.clipboardData.getData('text/html');
             let pastedDOMTree = $(pastedHTML);
 
@@ -430,8 +516,8 @@ a:hover {
                 console.log(node);
             });
 
-            return false;
-        }); */
+            return false; */
+        });
     });
 </script>
 
