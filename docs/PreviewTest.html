@@ -65,9 +65,10 @@ div.preview {
 
 #previewArea {
     flex: 1;
-
     word-wrap: break-word;
     overflow: auto;
+
+    font-size: .800em;
 }
 
 textarea {
@@ -196,6 +197,21 @@ h3 {
     border-bottom: 1px solid #850608;
 }
 
+h4 {
+    display: inline-block;
+    margin: 0.1rem 0;
+    padding: 0.625rem 1.125rem;
+
+    font-size: 1rem;
+    font-weight: 400;
+
+    border-radius: 6.1875rem;
+
+    color: #da4b48;
+    background-color: rgba(218, 78, 75, 0.1);
+}
+
+
 hr {
     margin: 0.75em 0px;
     padding: 0px;
@@ -289,10 +305,12 @@ const patoleTagList = {
     '[下線]': '<span class="underline">',
     '[/下線]': '</span>',
 
-    '[見出]': '<h2>',
-    '[/見出]': '</h2>',
+    '[旧見出]': '<h2>',
+    '[/旧見出]': '</h2>',
     '[小見出]': '<h3>',
     '[/小見出]': '</h3>',
+    '[見出]': '<h4>',
+    '[/見出]': '</h4>',
     '[太]': '<strong>',
     '[/太]': '</strong>',
 
@@ -317,7 +335,7 @@ const HTMLTagList = {
     'A': (node) => [ '[リンク:' + node.href + ':リンク]', '[/リンク]' ],
     'IMG': (node) => [ '[画像:' + node.src + ':画像]', '[/画像]' ],
 
-    'H2': (node) => [ '[見出]', '[/見出]' ],
+    'H2': (node) => [ '[旧見出]', '[/旧見出]' ],
     'H3': (node) => [ '[小見出]', '[/小見出]' ],
 
     'TABLE': (node) => [ '[テーブル]', '[/テーブル]' ],
@@ -329,6 +347,7 @@ const HTMLTagList = {
     'PRE': (node) => [ '[pre]', '[/pre]' ],
     'HR': (node) => [ '[罫線]', '[/罫線]' ],
     'BR': (node) => [ '\n', '' ],
+    'NEWLINE': (node) => [ ' _\n', '' ],
 
     'SPAN': (node) => {
         const classList = {
@@ -441,18 +460,18 @@ const HTMLTagList = {
             };
 
             let taggedText = escapedText.replace(
-                /(\[{1,2})([^:\[\]]+)([:\]]{1,2})/g,
+                /(\[{1,2})([^:\[\]\s]+)([:\]]{1,2})/g,
                 replacer
             );
             // /([:\[]{1,2})([^:\[\]]+)([:\]]{1,2})/g としても
             // :**]のタグがうまく置換できないので別に処理
             taggedText = taggedText.replace(
-                /(:{1,2})([^:\[\]]+)(\]{1,2})/g,
+                /(:{1,2})([^:\[\]\s]+)(\]{1,2})/g,
                 replacer
             );
 
             // 改行の後始末
-            let arrangedText = taggedText.replace(/ _\n/g, '');
+            let arrangedText = taggedText.replace(/ _\n/g, '<newline></newline>');
             arrangedText = arrangedText.replace(/\n/g, '<br>');
             $('#previewArea').html(arrangedText);
 
@@ -503,13 +522,13 @@ const HTMLTagList = {
                     }
                     case Node.TEXT_NODE: {
                         let escapedText = parentNode.nodeValue.replace(
-                            /(\[)([^:\[\]]+)([:\]])/g,
+                            /(\[)([^:\[\]\s]+)([:\]])/g,
                             replacer
                         );
 
                         // :**]のタグがうまく置換できないので別に処理
                         escapedText = escapedText.replace(
-                            /(\:)([^:\[\]]+)(\])/g,
+                            /(\:)([^:\[\]\s]+)(\])/g,
                             replacer
                         );
 
