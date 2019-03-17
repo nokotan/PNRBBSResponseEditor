@@ -123,7 +123,7 @@ span.water {
 }
 
 span.blue {
-    color: #00ffff;
+    color: #0000ff;
 }
 
 span.yellowgreen {
@@ -154,7 +154,7 @@ span.big {
     font-size: xx-large;
 }
 
-span.mediam {
+span.medium {
     font-size: x-large;
 }
 
@@ -283,17 +283,22 @@ a:hover {
             </div>
             <div class='menu-list'>
                 <div class='font-menu'>
-                    <button class='font-small' disabled>小</button>
-                    <button class='font-medium' disabled>中</button>
-                    <button class='font-big' disabled>大</button>
+                    <button class='font-small'><span class='small'>小</span></button>
+                    <button class='font-normal'>並</button>
+                    <button class='font-medium'>中</button>
+                    <button class='font-big'>大</button>
 
-                    <button class='font-strong' disabled>太字</button>
-                    <button class='font-strike' disabled>打消</button>
-                    <button class='font-underline' disabled>下線</button>
+                    <button class='font-strong'><strong>太字</strong></button>
+                    <button class='font-strike'><span class='strike'>打消</span></button>
+                    <button class='font-underline'><span class='underline'>下線</span></button>
 
-                    <button class='font-color' disabled>色</button>
+                    文字色<input type='color' class='font-color' value='#000000'></input>
+                    <button class='font-change-color'>この色にする</button>
                 </div>
                 <div class='insert-menu' style='display:none;'>
+                    <button class='insert-h3'>見出を追加</button>
+                    <button class='insert-hr'>罫線を追加</button>
+
                     <button class='insert-table' disabled>表を追加</button>
                     <button class='insert-link' disabled>リンクを追加</button>
                     <button class='insert-image' disabled>画像を追加</button>
@@ -322,7 +327,7 @@ const patoleTagList = {
     ':画像]': '">',
     '[/画像]': '</img>',
 
-    '[赤]': '<span class="red">',
+    /* '[赤]': '<span class="red">',
     '[/赤]': '</span>',
     '[橙]': '<span class="orange">',
     '[/橙]': '</span>',
@@ -344,28 +349,66 @@ const patoleTagList = {
     '[/灰]': '</span>',
     '[色:': '<span style="color:',
     ':色]': '">',
-    '[/色]': '</span>',
+    '[/色]': '</span>', */
 
-    '[大]': '<span class="big">',
+    '[赤]': '<font color="#FF0000">',
+    '[/赤]': '</font>',
+    '[橙]': '<font color="#FF9900">',
+    '[/橙]': '</font>',
+    '[水色]': '<font color="#00FFFF">',
+    '[/水色]': '</font>',
+    '[青]': '<font color="#0000FF">',
+    '[/青]': '</font>',
+    '[黄緑]': '<font color="#00FF00">',
+    '[/黄緑]': '</font>',
+    '[黄]': '<font color="#FFFF00">',
+    '[/黄]': '</font>',
+    '[緑]': '<font color="#339900">',
+    '[/緑]': '</font>',
+    '[紫]': '<font color="#6633CC">',
+    '[/紫]': '</font>',
+    '[桃]': '<font color="#FF66FF">',
+    '[/桃]': '</font>',
+    '[灰]': '<font color="#999999">',
+    '[/灰]': '</font>',
+    '[色:': '<font color="',
+    ':色]': '">',
+    '[/色]': '</font>',
+
+    /* '[大]': '<span class="big">',
     '[/大]': '</span>',
-    '[中]': '<span class="mediam">',
+    '[中]': '<span class="medium">',
     '[/中]': '</span>',
     '[小]': '<span class="small">',
-    '[/小]': '</span>',
+    '[/小]': '</span>', */
 
-    '[打消]': '<span class="strike">',
+    '[大]': '<font size="6">',
+    '[/大]': '</font>',
+    '[中]': '<font size="5">',
+    '[/中]': '</font>',
+    '[小]': '<font size="1">',
+    '[/小]': '</font>',
+
+    /* '[打消]': '<span class="strike">',
     '[/打消]': '</span>',
     '[下線]': '<span class="underline">',
-    '[/下線]': '</span>',
+    '[/下線]': '</span>', 
+    '[太]': '<strong>',
+    '[/太]': '</strong>', */
+
+    '[打消]': '<strike>',
+    '[/打消]': '</strike>',
+    '[下線]': '<u>',
+    '[/下線]': '</u>',
+    '[太]': '<b>',
+    '[/太]': '</b>',
 
     '[旧見出]': '<h2>',
     '[/旧見出]': '</h2>',
     '[小見出]': '<h3>',
     '[/小見出]': '</h3>',
-    '[見出]': '<h4>',
-    '[/見出]': '</h4>',
-    '[太]': '<strong>',
-    '[/太]': '</strong>',
+    '[見出]': '<div><h4>',
+    '[/見出]': '</h4></div>',
 
     '[テーブル]': '<table>',
     '[/テーブル]': '</table>',
@@ -396,7 +439,6 @@ const HTMLTagList = {
     'TH': (node) => [ '[th]', '[/th]' ],
     'TD': (node) => [ '[td]', '[/td]' ],
 
-    'STRONG': (node) => [ '[太]', '[/太]' ],
     'PRE': (node) => [ '[pre]', '[/pre]' ],
     'HR': (node) => [ '[罫線]', '[/罫線]' ],
     'BR': (node) => [ '\n', '' ],
@@ -453,21 +495,33 @@ const HTMLTagList = {
     // ぱとぇさん側のタグのサポート
     'H4': (node) => [ '[見出]', '[/見出]' ],
 
-    'U': (node) => [ '[下線]', '[/下線]' ],
+    'B': (node) => [ '[太]', '[/太]' ],
+    'STRONG': (node) => [ '[太]', '[/太]' ],
+
+    'STRIKE': (node) => [ '[打消]', '[/打消]' ],
     'S': (node) => [ '[打消]', '[/打消]' ],
     'DEL': (node) => [ '[打消]', '[/打消]' ],
 
+    'U': (node) => [ '[下線]', '[/下線]' ],
+
     'FONT': (node) => {
+        let tags = [ '', '' ];
+
         if (node.hasAttribute('size')) {
             let fontSize = node.getAttribute('size');
+
             const fontSizeList = {
                 '1': ['[小]', '[/小]'],
                 '5': ['[中]', '[/中]'],
                 '6': ['[大]', '[/大]'],
             };
 
-            return fontSizeList[fontSize] || [ '', '' ];
-        } else if (node.hasAttribute('color')) {
+            let addedTags = fontSizeList[fontSize] || [ '', '' ];          
+            tags[0] = addedTags[0] + tags[0];
+            tags[1] = tags[1] + addedTags[1];
+        }
+
+        if (node.hasAttribute('color')) {
             let fontColor = node.getAttribute('color');
 
             const knownColors = {
@@ -483,8 +537,12 @@ const HTMLTagList = {
                 '#999999': ['[灰]', '[/灰]'],
             };
 
-            return knownColors[fontColor] || [ '[色:' + fontColor + ':色]', '[/色]' ];
+            let addedTags =  knownColors[fontColor] || [ '[色:' + fontColor + ':色]', '[/色]' ];
+            tags[0] = addedTags[0] + tags[0];
+            tags[1] = tags[1] + addedTags[1];
         }
+
+        return tags;
     },
 };
 </script>
@@ -641,6 +699,63 @@ const HTMLTagList = {
 
             $('div.menu-list > div').hide();
             $('div.edit-table-menu').show();
+        });
+
+        const changeSelectedTextStyle = (styleName, arg) => {
+            let selection = window.getSelection();
+
+            let selectStartElement = $(selection.anchorNode);
+            let selectEndElement = $(selection.focusNode);
+
+            if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+            document.execCommand(styleName, false, arg);
+            updateSource($('#previewArea').get(0));
+        };
+
+        const execCommand = changeSelectedTextStyle;
+
+        $('button.font-small').on('click', (e) => {
+            changeSelectedTextStyle('fontSize', 1);
+        });
+
+        $('button.font-normal').on('click', (e) => {
+            changeSelectedTextStyle('fontSize', 2);
+        });
+
+        $('button.font-medium').on('click', (e) => {
+            changeSelectedTextStyle('fontSize', 5);
+        });
+
+        $('button.font-big').on('click', (e) => {
+            changeSelectedTextStyle('fontSize', 6);
+        });
+
+        $('button.font-strong').on('click', (e) => {
+            changeSelectedTextStyle('bold');
+        });
+
+        $('button.font-strike').on('click', (e) => {
+            changeSelectedTextStyle('strikeThrough');
+        });
+
+        $('button.font-underline').on('click', (e) => {
+            changeSelectedTextStyle('underline');
+        });
+
+        $('input.font-color').on('change', (e) => {
+            changeSelectedTextStyle('foreColor', e.target.value);
+        });
+
+        $('button.font-change-color').on('click', (e) => {
+            changeSelectedTextStyle('foreColor', $('input.font-color').val());
+        });
+
+        $('button.insert-h3').on('click', (e) => {
+            execCommand('formatBlock', '<h4>');
+        });
+
+        $('button.insert-hr').on('click', (e) => {
+            execCommand('insertHorizontalRule');
         });
 
         $('button.add-row').on('click', (e) => {
