@@ -78,6 +78,30 @@ textarea {
     background-color: #e0efef;
     font-size: 16px;
 }
+
+.menu-tab {
+    margin: 2px 2px 0px 2px;
+    padding: 2px 6px 3px 6px;
+
+    color: #101004;
+    background-color: rgb(128, 88, 85);
+
+    border: 2px solid #8c8b8b;
+    border-bottom: none;
+}
+
+.selected-menu-tab {
+    background-color: rgb(218, 178, 175);
+}
+
+.menu-list {
+    margin: 0px 2px 6px 2px;
+    padding: 2px 6px 3px 6px;
+
+    background-color: rgb(218, 178, 175);
+
+    border: 2px solid #8c8b8b;
+}
 </style>
 
 <style>
@@ -252,7 +276,36 @@ a:hover {
         </div>
         <div class='preview'>
             <div>Preview</div>
-            <div id='previewArea' contenteditable='true'></div>
+            <div class='menu-tab-list'>
+                <a href='javascript:;' class='menu-tab show-font-menu selected-menu-tab'>文字</a>
+                <a href='javascript:;' class='menu-tab show-insert-menu'>挿入</a>
+                <a href='javascript:;' class='menu-tab show-edit-table-menu'>表</a>
+            </div>
+            <div class='menu-list'>
+                <div class='font-menu'>
+                    <button class='font-small' disabled>小</button>
+                    <button class='font-medium' disabled>中</button>
+                    <button class='font-big' disabled>大</button>
+
+                    <button class='font-strong' disabled>太字</button>
+                    <button class='font-strike' disabled>打消</button>
+                    <button class='font-underline' disabled>下線</button>
+
+                    <button class='font-color' disabled>色</button>
+                </div>
+                <div class='insert-menu' style='display:none;'>
+                    <button class='insert-table' disabled>表を追加</button>
+                    <button class='insert-link' disabled>リンクを追加</button>
+                    <button class='insert-image' disabled>画像を追加</button>
+                </div>
+                <div class='edit-table-menu' style='display:none;'>
+                    <button class='add-row'>行を追加</button>
+                    <button class='remove-row'>行を削除</button>
+                    <button class='add-col' disabled>列を追加</button>
+                    <button class='remove-col' disabled>列を削除</button>
+                </div>
+            </div>
+            <div id='previewArea' contenteditable></div>
         </div>
     </div>
 </body>
@@ -438,7 +491,7 @@ const HTMLTagList = {
 <script type='text/javascript'>
     $(document).ready(() => {
         const updatePreview = (inputText) => {
-            let previousScroll = $(window).scrollTop();
+            let previousScroll = $('#previewArea').scrollTop();
 
             // htmlエスケープ
             const escapeList = {
@@ -476,7 +529,7 @@ const HTMLTagList = {
             $('#previewArea').html(arrangedText);
 
             window.setTimeout(() => { 
-                $(window).scrollTop(previousScroll);
+                $('#previewArea').scrollTop(previousScroll);
             }, 500);
         };
 
@@ -502,7 +555,7 @@ const HTMLTagList = {
             }
         });
 
-        $('#previewArea').on('input', (e) => {
+        const updateSource = (node) => {
             const replacer = (match, p1, p2, p3) => {
                 if (patoleTagList[match]) {
                     return p1 + match + p3;
@@ -537,11 +590,17 @@ const HTMLTagList = {
                 }
             };
 
-            $('#previewSource').val(stringify(e.target));
+            $('#previewSource').val(stringify(node));
+        }
+
+        $('#previewArea').on('input', (e) => {
+            updateSource(e.target);
         }); 
 
         $('#previewArea').on('paste', (e) => {
-            window.setTimeout(() => { updatePreview($('#previewSource').val()); }, 1000);
+            let previousScroll = $('#previewArea').scrollTop();
+            window.setTimeout(() => { updatePreview($('#previewSource').val()); }, 500);
+            window.setTimeout(() => { $('#previewArea').scrollTop(previousScroll); }, 1000);
 
             /* e.preventDefault();
             let pastedHTML = e.originalEvent.clipboardData.getData('text/html');
@@ -558,6 +617,75 @@ const HTMLTagList = {
             });
 
             return false; */
+        });
+
+        $('.show-font-menu').on('click', (e) => {
+            $('.menu-tab').removeClass('selected-menu-tab');
+            $(e.target).addClass('selected-menu-tab');
+
+            $('div.menu-list > div').hide();
+            $('div.font-menu').show();
+        });
+
+        $('.show-insert-menu').on('click', (e) => {
+            $('.menu-tab').removeClass('selected-menu-tab');
+            $(e.target).addClass('selected-menu-tab');
+
+            $('div.menu-list > div').hide();
+            $('div.insert-menu').show();
+        });
+
+        $('.show-edit-table-menu').on('click', (e) => {
+            $('.menu-tab').removeClass('selected-menu-tab');
+            $(e.target).addClass('selected-menu-tab');
+
+            $('div.menu-list > div').hide();
+            $('div.edit-table-menu').show();
+        });
+
+        $('button.add-row').on('click', (e) => {
+            let selection = window.getSelection();
+
+            let selectStartElement = $(selection.anchorNode).closest('tr');
+            let selectEndElement = $(selection.focusNode).closest('tr');
+
+            if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+            // 同じテーブルでなければ列を挿入できない
+            if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+             
+            selectEndElement.after(selectEndElement.clone());
+
+            updateSource($('#previewArea').get(0));
+        });
+
+        $('button.remove-row').on('click', (e) => {
+            let selection = window.getSelection();
+
+            let selectStartElement = $(selection.anchorNode).closest('tr');
+            let selectEndElement = $(selection.focusNode).closest('tr');
+
+            if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+            if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+            let nextRemoved = selectStartElement;
+
+            while (!nextRemoved.is(selectEndElement)) {
+                let removed = nextRemoved;
+                nextRemoved = removed.next();
+                removed.remove();
+            }
+
+            selectEndElement.remove();
+
+            updateSource($('#previewArea').get(0));
+        });
+
+        $('button.add-col').on('click', (e) => {
+
+        });
+
+        $('button.remove-col').on('click', (e) => {
+
         });
 
         // 改行を br に強制する
