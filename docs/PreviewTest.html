@@ -202,8 +202,12 @@ tr:first-child {
 
 td {
     vertical-align: top;
+    border-left: 1px dashed #afafa0;
 }
 
+td:first-child {
+    border-left: none;
+} 
 
 h2 {
     margin: 0.75em 0px;
@@ -344,8 +348,8 @@ div.dialog {
                 <div class='edit-table-menu' style='display:none;'>
                     <button class='add-row'>行を追加</button>
                     <button class='remove-row'>行を削除</button>
-                    <button class='add-col' disabled>列を追加</button>
-                    <button class='remove-col' disabled>列を削除</button>
+                    <button class='add-col'>列を追加</button>
+                    <button class='remove-col'>列を削除</button>
                 </div>
             </div>
             <div id='previewArea' contenteditable></div>
@@ -503,23 +507,23 @@ const patoleTagList = {
 };
 
 const HTMLTagList = {
-    'A': (node) => [ '[リンク:' + node.href + ':リンク]', '[/リンク]' ],
-    'IMG': (node) => [ '[画像:' + node.src + ':画像]', '[/画像]' ],
+    'A': function (node) { return [ '[リンク:' + node.href + ':リンク]', '[/リンク]' ]; },
+    'IMG': function (node) { return [ '[画像:' + node.src + ':画像]', '[/画像]' ]; },
 
-    'H2': (node) => [ '[旧見出]', '[/旧見出]' ],
-    'H3': (node) => [ '[小見出]', '[/小見出]' ],
+    'H2': function () { return [ '[旧見出]', '[/旧見出]' ]; },
+    'H3': function () { return [ '[小見出]', '[/小見出]' ]; },
 
-    'TABLE': (node) => [ '[テーブル]', '[/テーブル]' ],
-    'TR': (node) => [ '[tr]', '[/tr]' ],
-    'TH': (node) => [ '[th]', '[/th]' ],
-    'TD': (node) => [ '[td]', '[/td]' ],
+    'TABLE': function () { return [ '[テーブル]', '[/テーブル]' ]; },
+    'TR': function () { return [ '[tr]', '[/tr]' ]; },
+    'TH': function () { return [ '[th]', '[/th]' ]; },
+    'TD': function () { return [ '[td]', '[/td]' ]; },
 
-    'PRE': (node) => [ '[pre]', '[/pre]' ],
-    'HR': (node) => [ '[罫線]', '[/罫線]' ],
-    'BR': (node) => [ '\n', '' ],
-    'NEWLINE': (node) => [ ' _\n', '' ],
+    'PRE': function () { return [ '[pre]', '[/pre]' ]; },
+    'HR': function () { return [ '[罫線]', '[/罫線]' ]; },
+    'BR': function () { return [ '\n', '' ]; },
+    'NEWLINE': function () { return [ ' _\n', '' ]; },
 
-    'SPAN': (node) => {
+    'SPAN': function (node) {
         const classList = {
             'red': ['[赤]', '[/赤]'],
             'orange': ['[橙]', '[/橙]'],
@@ -544,11 +548,11 @@ const HTMLTagList = {
             return classList[node.className] || [ '', '' ];
         } else if (node.style && node.style.color) {
             // from https://stackoverflow.com/questions/1740700/how-to-get-hex-color-value-rather-than-rgb-value
-            const hexColorFromRGBColor = (rgb) => {
+            const hexColorFromRGBColor = function (rgb) {
                 if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
 
                 rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-                const hex = (x) => ('0' + parseInt(x).toString(16)).slice(-2);
+                const hex = function (x) { return ('0' + parseInt(x).toString(16)).slice(-2); };
 
                 return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
             };
@@ -568,19 +572,19 @@ const HTMLTagList = {
     },
 
     // ぱとぇさん側のタグのサポート
-    'H4': (node) => [ '[見出]', '[/見出]' ],
+    'H4': function () { return [ '[見出]', '[/見出]' ]; },
 
-    'B': (node) => [ '[太]', '[/太]' ],
-    'STRONG': (node) => [ '[太]', '[/太]' ],
+    'B': function () { return [ '[太]', '[/太]' ]; },
+    'STRONG': function () { return [ '[太]', '[/太]' ]; },
 
-    'STRIKE': (node) => [ '[打消]', '[/打消]' ],
-    'S': (node) => [ '[打消]', '[/打消]' ],
-    'DEL': (node) => [ '[打消]', '[/打消]' ],
+    'STRIKE': function () { return [ '[打消]', '[/打消]' ]; },
+    'S': function () { return [ '[打消]', '[/打消]' ]; },
+    'DEL': function () { return [ '[打消]', '[/打消]' ]; },
 
-    'U': (node) => [ '[下線]', '[/下線]' ],
+    'U': function () { return [ '[下線]', '[/下線]' ]; },
 
-    'FONT': (node) => {
-        let tags = [ '', '' ];
+    'FONT': function (node) {
+        let tags = [ [], [] ];
 
         if (node.hasAttribute('size')) {
             let fontSize = node.getAttribute('size');
@@ -591,9 +595,9 @@ const HTMLTagList = {
                 '6': ['[大]', '[/大]'],
             };
 
-            let addedTags = fontSizeList[fontSize] || [ '', '' ];          
-            tags[0] = addedTags[0] + tags[0];
-            tags[1] = tags[1] + addedTags[1];
+            let addedTags = fontSizeList[fontSize] || [ '', '' ];
+            tags[0].push(addedTags[0]);
+            tags[1].push(addedTags[1]);
         }
 
         if (node.hasAttribute('color')) {
@@ -613,17 +617,20 @@ const HTMLTagList = {
             };
 
             let addedTags =  knownColors[fontColor] || [ '[色:' + fontColor + ':色]', '[/色]' ];
-            tags[0] = addedTags[0] + tags[0];
-            tags[1] = tags[1] + addedTags[1];
+            tags[0].push(addedTags[0]);
+            tags[1].push(addedTags[1]);
         }
 
-        return tags;
+        return [ 
+            tags[0].reduce(function (accumulator, currentValue) { return accumulator + currentValue; }, ''),
+            tags[1].reduce(function (accumulator, currentValue) { return currentValue + accumulator; }, '')
+        ];
     },
 };
 </script>
 
 <script type='text/javascript'>
-const updatePreview = (inputText) => {
+const updatePreview = function (inputText) {
     let previousScroll = $('#previewArea').scrollTop();
 
     // htmlエスケープ
@@ -635,9 +642,9 @@ const updatePreview = (inputText) => {
         '>': '&gt;'
     };
 
-    let escapedText = inputText.replace(/[&<>"']/g, (match) => escapeList[match]); 
+    let escapedText = inputText.replace(/[&<>"']/g, function (match) { return escapeList[match]; }); 
 
-    const replacer = (match, p1, p2, p3) => {
+    const replacer = function (match, p1, p2, p3) {
         if ((p1 === '[[' || p1 === '::') && (p3 === ']]' || p3 === '::')) {
             return [p1[0], p2, p3[0]].join('');
         } else {
@@ -661,13 +668,13 @@ const updatePreview = (inputText) => {
     arrangedText = arrangedText.replace(/\n/g, '<br>');
     $('#previewArea').html(arrangedText);
 
-    window.setTimeout(() => { 
+    window.setTimeout(function () { 
         $('#previewArea').scrollTop(previousScroll);
     }, 500);
 };
 
-const updateSource = (node) => {
-    const replacer = (match, p1, p2, p3) => {
+const updateSource = function (node) {
+    const replacer = function (match, p1, p2, p3) {
         if (patoleTagList[match]) {
             return p1 + match + p3;
         } else {
@@ -675,13 +682,13 @@ const updateSource = (node) => {
         }
     };
 
-    const stringify = (parentNode) => {
+    const stringify = function (parentNode) {
         switch (parentNode.nodeType) {
             case Node.ELEMENT_NODE: {
-                let tagConverter = HTMLTagList[parentNode.tagName] || ((n) => [ '', '' ]);
+                let tagConverter = HTMLTagList[parentNode.tagName] || (function (n) { return [ '', '' ]; });
                 let tag = tagConverter(parentNode);
                 let childList = Array.from(parentNode.childNodes)
-                let childStringified = childList.map(n => stringify(n));
+                let childStringified = childList.map(function (n) { return stringify(n); });
                 return tag[0] + childStringified.join('') + tag[1];
             }
             case Node.TEXT_NODE: {
@@ -706,9 +713,9 @@ const updateSource = (node) => {
 </script>
 
 <script type='text/javascript'>
-const bindMenuButtonEvents = () => {
+const bindMenuButtonEvents = function () {
     // メニュータブのセットアップ
-    $('.show-font-menu').on('click', (e) => {
+    $('.show-font-menu').on('click', function (e) {
         $('.menu-tab').removeClass('selected-menu-tab');
         $(e.target).addClass('selected-menu-tab');
 
@@ -716,7 +723,7 @@ const bindMenuButtonEvents = () => {
         $('div.font-menu').show();
     });
 
-    $('.show-insert-menu').on('click', (e) => {
+    $('.show-insert-menu').on('click', function (e) {
         $('.menu-tab').removeClass('selected-menu-tab');
         $(e.target).addClass('selected-menu-tab');
 
@@ -724,7 +731,7 @@ const bindMenuButtonEvents = () => {
         $('div.insert-menu').show();
     });
 
-    $('.show-edit-table-menu').on('click', (e) => {
+    $('.show-edit-table-menu').on('click', function (e) {
         $('.menu-tab').removeClass('selected-menu-tab');
         $(e.target).addClass('selected-menu-tab');
 
@@ -732,7 +739,7 @@ const bindMenuButtonEvents = () => {
         $('div.edit-table-menu').show();
     });
 
-    const changeSelectedTextStyle = (styleName, arg) => {
+    const changeSelectedTextStyle = function (styleName, arg) {
         let selection = window.getSelection();
 
         let selectStartElement = $(selection.anchorNode);
@@ -747,7 +754,7 @@ const bindMenuButtonEvents = () => {
 
     let preservedSelection = null;
 
-    const showDialog = (dialogName) => {
+    const showDialog = function (dialogName) {
         $('div.modalWindowArea').css('display', 'flex');
         $(dialogName).show();
 
@@ -758,18 +765,18 @@ const bindMenuButtonEvents = () => {
         }
     };
 
-    const reloadSelection = () => {
+    const reloadSelection = function () {
         let currentSelection = window.getSelection();
         currentSelection.removeAllRanges();
         currentSelection.addRange(preservedSelection);
     };
 
-    $('div.out-bounds-of-dialog, div.dialog button.accept-button').on('click', (e) => {
+    $('div.out-bounds-of-dialog, div.dialog button.accept-button').on('click', function (e) {
         $('div.modalWindowArea, div.dialog').hide();
     });
 
     // ダイアログのセットアップ
-    $('div.create-table-dialog button.accept-button').on('click', (e) => {
+    $('div.create-table-dialog button.accept-button').on('click', function (e) {
         reloadSelection();
 
         let addedHTML = '<table>';
@@ -793,74 +800,74 @@ const bindMenuButtonEvents = () => {
         execCommand('insertHTML', addedHTML);
     });
 
-    $('div.create-link-dialog button.accept-button').on('click', (e) => {
+    $('div.create-link-dialog button.accept-button').on('click', function (e) {
         reloadSelection();
         execCommand('createLink', $('#linkReference').val());
     });
 
-    $('div.create-image-dialog button.accept-button').on('click', (e) => {
+    $('div.create-image-dialog button.accept-button').on('click', function (e) {
         reloadSelection();
         execCommand('insertImage', $('#imageLink').val());
     });
 
     // メニューボタンのセットアップ
-    $('button.font-small').on('click', (e) => {
+    $('button.font-small').on('click', function (e) {
         changeSelectedTextStyle('fontSize', 1);
     });
 
-    $('button.font-normal').on('click', (e) => {
+    $('button.font-normal').on('click', function (e) {
         changeSelectedTextStyle('fontSize', 2);
     });
 
-    $('button.font-medium').on('click', (e) => {
+    $('button.font-medium').on('click', function (e) {
         changeSelectedTextStyle('fontSize', 5);
     });
 
-    $('button.font-big').on('click', (e) => {
+    $('button.font-big').on('click', function (e) {
         changeSelectedTextStyle('fontSize', 6);
     });
 
-    $('button.font-strong').on('click', (e) => {
+    $('button.font-strong').on('click', function (e) {
         changeSelectedTextStyle('bold');
     });
 
-    $('button.font-strike').on('click', (e) => {
+    $('button.font-strike').on('click', function (e) {
         changeSelectedTextStyle('strikeThrough');
     });
 
-    $('button.font-underline').on('click', (e) => {
+    $('button.font-underline').on('click', function (e) {
         changeSelectedTextStyle('underline');
     });
 
-    $('input.font-color').on('change', (e) => {
+    $('input.font-color').on('change', function (e) {
         changeSelectedTextStyle('foreColor', e.target.value);
     });
 
-    $('button.font-change-color').on('click', (e) => {
+    $('button.font-change-color').on('click', function (e) {
         changeSelectedTextStyle('foreColor', $('input.font-color').val());
     });
 
-    $('button.insert-h3').on('click', (e) => {
+    $('button.insert-h3').on('click', function (e) {
         execCommand('formatBlock', '<h4>');
     });
 
-    $('button.insert-hr').on('click', (e) => {
+    $('button.insert-hr').on('click', function (e) {
         execCommand('insertHorizontalRule');
     });
 
-    $('button.insert-table').on('click', (e) => {
+    $('button.insert-table').on('click', function (e) {
         showDialog('.create-table-dialog');
     });
 
-    $('button.insert-link').on('click', (e) => {
+    $('button.insert-link').on('click', function (e) {
         showDialog('.create-link-dialog');
     });
 
-    $('button.insert-image').on('click', (e) => {
+    $('button.insert-image').on('click', function (e) {
         showDialog('.create-image-dialog');
     });
 
-    $('button.add-row').on('click', (e) => {
+    $('button.add-row').on('click', function (e) {
         let selection = window.getSelection();
 
         let selectStartElement = $(selection.anchorNode).closest('tr');
@@ -875,7 +882,7 @@ const bindMenuButtonEvents = () => {
         updateSource($('#previewArea').get(0));
     });
 
-    $('button.remove-row').on('click', (e) => {
+    $('button.remove-row').on('click', function (e) {
         let selection = window.getSelection();
 
         let selectStartElement = $(selection.anchorNode).closest('tr');
@@ -897,31 +904,69 @@ const bindMenuButtonEvents = () => {
         updateSource($('#previewArea').get(0));
     });
 
-    $('button.add-col').on('click', (e) => {
+    $('button.add-col').on('click', function (e) {
+        let selection = window.getSelection();
 
+        let selectStartElement = $(selection.anchorNode).closest('td');
+        let selectEndElement = $(selection.focusNode).closest('td');
+
+        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+        if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+        let colObjects = selectStartElement.parent().children();
+        let colIndex = colObjects.index(selectEndElement);
+
+        let tableObject = selectEndElement.closest('tbody');
+        let rowObjects = tableObject.children();
+
+        rowObjects.each(function (index, element) {
+            let col = $(element).children().get(colIndex);
+            $(col).after($(col).clone());
+        });
+
+        updateSource($('#previewArea').get(0));
     });
 
-    $('button.remove-col').on('click', (e) => {
+    $('button.remove-col').on('click', function (e) {
+        let selection = window.getSelection();
 
+        let selectStartElement = $(selection.anchorNode).closest('td');
+        let selectEndElement = $(selection.focusNode).closest('td');
+
+        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+        if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+        let colObjects = selectStartElement.parent().children();
+        let colStartIndex = colObjects.index(selectStartElement);
+        let colEndIndex = colObjects.index(selectEndElement);
+
+        let tableObject = selectStartElement.closest('tbody');
+        let rowObjects = tableObject.children();
+
+        rowObjects.each(function (index, element) {
+            $(element).children().slice(colStartIndex, colEndIndex + 1).remove();
+        });
+
+        updateSource($('#previewArea').get(0));
     });
 };
 </script>
 <script type='text/javascript'>
-    $(document).ready(() => {
+    $(document).ready(function () {
         let shouldUpdate = true;
         let timerID = undefined;
 
-        $('#previewSource').on('input', (e) => {
+        $('#previewSource').on('input', function (e) {
             if (shouldUpdate === false) {
                 window.clearTimeout(timerID);
-                timerID = window.setTimeout(() => { 
+                timerID = window.setTimeout(function () { 
                     shouldUpdate = true;   
                     timerID = undefined;                
                     updatePreview(e.target.value);                
                 }, 1000);
             } else {
                 shouldUpdate = false;
-                timerID = window.setTimeout(() => { 
+                timerID = window.setTimeout(function () { 
                     shouldUpdate = true;
                     timerID = undefined;
                 }, 1000);
@@ -930,14 +975,14 @@ const bindMenuButtonEvents = () => {
             }
         });
 
-        $('#previewArea').on('input', (e) => {
+        $('#previewArea').on('input', function (e) {
             updateSource(e.target);
         }); 
 
-        $('#previewArea').on('paste', (e) => {
+        $('#previewArea').on('paste', function (e) {
             let previousScroll = $('#previewArea').scrollTop();
-            window.setTimeout(() => { updatePreview($('#previewSource').val()); }, 500);
-            window.setTimeout(() => { $('#previewArea').scrollTop(previousScroll); }, 1000);
+            window.setTimeout(function () { updatePreview($('#previewSource').val()); }, 500);
+            window.setTimeout(function () { $('#previewArea').scrollTop(previousScroll); }, 1000);
 
             /* e.preventDefault();
             let pastedHTML = e.originalEvent.clipboardData.getData('text/html');
@@ -946,7 +991,7 @@ const bindMenuButtonEvents = () => {
             let selection = window.getSelection();
             if (!selection.rangeCount) return false;
 
-            $(pastedDOMTree.get().reverse()).each((i, node) => {
+            $(pastedDOMTree.get().reverse()).each(function (i, node) {
                 node.style = '';
                 selection.getRangeAt(0).insertNode(node);
 
