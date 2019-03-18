@@ -687,7 +687,7 @@ const updateSource = function (node) {
             case Node.ELEMENT_NODE: {
                 let tagConverter = HTMLTagList[parentNode.tagName] || (function (n) { return [ '', '' ]; });
                 let tag = tagConverter(parentNode);
-                let childList = Array.from(parentNode.childNodes)
+                let childList = $(parentNode.childNodes).get();
                 let childStringified = childList.map(function (n) { return stringify(n); });
                 return tag[0] + childStringified.join('') + tag[1];
             }
@@ -976,7 +976,11 @@ const bindMenuButtonEvents = function () {
         });
 
         $('#previewArea').on('input', function (e) {
-            updateSource(e.target);
+            updateSource($('#previewArea').get(0));
+        }); 
+
+		$('#previewArea').on('textinput', function (e) {
+            updateSource($('#previewArea').get(0));
         }); 
 
         $('#previewArea').on('paste', function (e) {
