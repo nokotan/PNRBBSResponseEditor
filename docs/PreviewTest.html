@@ -1,370 +1,381 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html>
 
 <head>
     <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, height=device-height, initial-scale=1'>
+    <meta name='viewport' content='initial-scale=1'>
+
+    <style>
+        * {
+            font-family: sans-serif;
+            line-height: 1.7;
+        }
+
+        div.fullscreen {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+        }
+
+        div.vertical-align-flex {
+            display: flex;
+            flex-direction: column;
+        }
+
+        div.source, div.preview {
+            padding: 20px;
+            color: #101004;
+            background-color: #fff4f4;
+        }
+
+        @media screen and (min-width: 800px) {
+
+            div.main-view {
+                flex: 1;
+                display: flex;
+            }
+
+            div.source, div.preview {
+                flex: 1;
+                margin: 8px;
+            }
+
+            div.show-only-pc {
+                display: block;
+            }
+
+            div.show-only-mobile {
+                display: none;
+            }
+        }
+
+        @media screen and (max-width: 800px) {
+
+            div.main-view {
+                flex: 1;
+            }
+
+            div.source, div.preview {
+                margin: 8px 8px 0px 8px;
+                width: calc(100% - 56px);
+                height: calc(100% - 48px);
+            }
+
+            div.show-only-pc {
+                display: none;
+            }
+
+            div.show-only-mobile {
+                height: 1.5em;
+                margin: 0px 8px 8px 8px;
+            }
+
+            div.hide-only-mobile {
+                display: none;
+            }
+        }
+
+        #previewArea {
+            flex: 1;
+            word-wrap: break-word;
+            overflow: auto;
+            font-size: .800em;
+        }
+
+        textarea {
+            width: calc(100% - 6px);
+            flex: 1;
+            background-color: #e0efef;
+            font-size: 16px;
+        }
+    </style>
+
+    <style>
+        .view-tab {
+            margin: 0px 2px 2px 2px;
+            padding: 3px 6px 2px 6px;
+            color: #101004;
+            background-color: rgb(158, 118, 115);
+            transition-duration: 0.5s;
+        }
+
+        .selected-view-tab {
+            background-color: rgb(248, 208, 205);
+        }
+
+        .menu-tab {
+            margin: 2px 2px 0px 2px;
+            padding: 2px 6px 3px 6px;
+            color: #101004;
+            background-color: rgb(128, 88, 85);
+            border: 2px solid #8c8b8b;
+            border-bottom: none;
+            transition-duration: 0.5s;
+        }
+
+        .selected-menu-tab {
+            background-color: rgb(218, 178, 175);
+        }
+
+        .menu-list {
+            margin: 0px 2px 6px 2px;
+            padding: 2px 6px 3px 6px;
+            background-color: rgb(218, 178, 175);
+            border: 2px solid #8c8b8b;
+        }
+    </style>
+
+    <style>
+        p, span {
+            margin: 0px;
+            padding: 0px;
+            min-height: 1em;
+        }
+
+            span.red {
+                color: #ff0000;
+            }
+
+            span.orange {
+                color: #ff9900;
+            }
+
+            span.water {
+                color: #00ffff;
+            }
+
+            span.blue {
+                color: #0000ff;
+            }
+
+            span.yellowgreen {
+                color: #00ff00;
+            }
+
+            span.yellow {
+                color: #ffff00;
+            }
+
+            span.green {
+                color: #339900;
+            }
+
+            span.purple {
+                color: #6633cc;
+            }
+
+            span.pink {
+                color: #ff66ff;
+            }
+
+            span.gray {
+                color: #999999;
+            }
+
+            span.big {
+                font-size: xx-large;
+            }
+
+            span.medium {
+                font-size: x-large;
+            }
+
+            span.small {
+                font-size: xx-small;
+            }
+
+            span.underline {
+                text-decoration: underline;
+            }
+
+            span.strike {
+                text-decoration: line-through;
+            }
+
+        table {
+            min-width: 100%;
+            margin: 0.75em 0px;
+            border-collapse: collapse;
+            background-color: #202010;
+            color: #f4f4f4;
+            caret-color: #f4f4f4;
+            text-align: left;
+            /* word-break: keep-all; */
+        }
+
+        .overflow {
+            overflow: scroll;
+        }
+
+        th, td {
+            padding: 1em;
+        }
+
+        tr {
+            border-top: 1px solid #afafa0;
+        }
+
+            tr:first-child {
+                border-top: none;
+            }
+
+        td {
+            vertical-align: top;
+            border-left: 1px dashed #afafa0;
+            min-height: 1em;
+        }
+
+            td:first-child {
+                border-left: none;
+            }
+
+        h2 {
+            margin: 0.75em 0px;
+            padding: 0.25em 0.5em;
+            border: 1px solid #850608;
+            border-radius: 10px;
+            background-color: #952628;
+            color: #f4f4f4;
+        }
+
+        h3 {
+            margin: 0.75em 0px;
+            padding: 0.25em 0.5em;
+            border-bottom: 1px solid #850608;
+        }
+
+        h4 {
+            display: inline-block;
+            margin: 0.1rem 0;
+            padding: 0.625rem 1.125rem;
+            font-size: 1rem;
+            font-weight: 400;
+            border-radius: 6.1875rem;
+            color: #da4b48;
+            background-color: rgba(218, 78, 75, 0.1);
+        }
+
+
+        hr {
+            margin: 0.75em 0px;
+            padding: 0px;
+            border: none;
+            border-top: 2px dashed #8c8b8b;
+        }
+
+        pre {
+            margin: 0.75em 0px;
+            padding: 1em;
+            border: 1px solid #8c8b8b;
+            border-radius: 3px;
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.9em;
+            overflow: auto;
+        }
+
+        a {
+            color: #21c87a;
+            text-decoration: none;
+        }
+
+            a:hover {
+                color: #168652;
+                text-decoration: none;
+            }
+    </style>
+    <style>
+        div.modalWindowArea {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        div.out-bounds-of-dialog {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+            z-index: 9997;
+        }
+
+        div.dialog {
+            display: none;
+            padding: 30px;
+            background-color: #ffffff;
+            z-index: 9998;
+        }
+    </style>
 </head>
 
-<style>
-* {
-    font-family: sans-serif;
-    line-height: 1.7;
-}
-
-div.source, div.preview { 
-    padding: 20px;
-
-    color: #101004;
-    background-color: #fff4f4;
-
-    display: flex;
-    flex-direction: column;
-}
-
-@media screen and (min-width: 800px) {
-
-div.source, div.preview {
-    width: calc(50vw - 50px);
-
-    position: fixed;
-    top: 8px;
-    bottom: 8px;
-}
-
-div.source {
-    left: 8px;
-}
-
-div.preview {
-    right: 8px;
-}
-
-}
-
-@media screen and (max-width: 800px) {
-
-div.source, div.preview {
-    height: calc(50vh - 50px);
-
-    position: fixed;
-    left: 8px;
-    right: 8px;
-}
-
-div.source {
-    top: 8px;
-}
-
-div.preview {
-    bottom: 8px;
-}
-
-}
-
-#previewArea {
-    flex: 1;
-    word-wrap: break-word;
-    overflow: auto;
-
-    font-size: .800em;
-}
-
-textarea {
-    width: calc(100% - 6px);
-    flex: 1;
-
-    background-color: #e0efef;
-    font-size: 16px;
-}
-
-.menu-tab {
-    margin: 2px 2px 0px 2px;
-    padding: 2px 6px 3px 6px;
-
-    color: #101004;
-    background-color: rgb(128, 88, 85);
-
-    border: 2px solid #8c8b8b;
-    border-bottom: none;
-
-    transition-duration: 0.5s;
-}
-
-.selected-menu-tab {
-    background-color: rgb(218, 178, 175);
-}
-
-.menu-list {
-    margin: 0px 2px 6px 2px;
-    padding: 2px 6px 3px 6px;
-
-    background-color: rgb(218, 178, 175);
-
-    border: 2px solid #8c8b8b;
-}
-</style>
-
-<style>
-span {
-    margin: 0px;
-    padding: 0px;
-}
-
-span.red {
-    color: #ff0000;
-}
-
-span.orange {
-    color: #ff9900;
-}
-
-span.water {
-    color: #00ffff;
-}
-
-span.blue {
-    color: #0000ff;
-}
-
-span.yellowgreen {
-    color: #00ff00;
-}
-
-span.yellow {
-    color: #ffff00;
-}
-
-span.green {
-    color: #339900;
-}
-
-span.purple {
-    color: #6633cc;
-}
-
-span.pink {
-    color: #ff66ff;
-}
-
-span.gray {
-    color: #999999;
-}
-
-span.big {
-    font-size: xx-large;
-}
-
-span.medium {
-    font-size: x-large;
-}
-
-span.small {
-    font-size: xx-small;
-}
-
-span.underline {
-    text-decoration: underline;
-}
-
-span.strike {
-    text-decoration: line-through;
-}
-
-table {
-    min-width: 100%;
-    margin: 0.75em 0px;
-
-    border-collapse: collapse;
-    background-color: #202010;
-    color: #f4f4f4;
-    caret-color: #f4f4f4;
-    text-align: left;
-    /* word-break: keep-all; */
-}
-
-.overflow {
-    overflow: scroll;
-}
-
-th, td {
-    padding: 1em;
-} 
-
-tr {
-    border-top: 1px solid #afafa0;
-}
-
-tr:first-child {
-    border-top: none;
-} 
-
-td {
-    vertical-align: top;
-    border-left: 1px dashed #afafa0;
-}
-
-td:first-child {
-    border-left: none;
-} 
-
-h2 {
-    margin: 0.75em 0px;
-    padding: 0.25em 0.5em;
-
-    border: 1px solid #850608;
-    border-radius: 10px;
-
-    background-color: #952628;
-    color: #f4f4f4;
-}
-
-h3 {
-    margin: 0.75em 0px;
-    padding: 0.25em 0.5em;
-
-    border-bottom: 1px solid #850608;
-}
-
-h4 {
-    display: inline-block;
-    margin: 0.1rem 0;
-    padding: 0.625rem 1.125rem;
-
-    font-size: 1rem;
-    font-weight: 400;
-
-    border-radius: 6.1875rem;
-
-    color: #da4b48;
-    background-color: rgba(218, 78, 75, 0.1);
-}
-
-
-hr {
-    margin: 0.75em 0px;
-    padding: 0px;
-
-    border: none;
-    border-top: 2px dashed #8c8b8b;
-}
-
-pre {
-    margin: 0.75em 0px;
-    padding: 1em;
-
-    border: 1px solid #8c8b8b;
-    border-radius: 3px;
-
-    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.9em;
-
-    overflow: auto;
-}
-
-a {
-  color: #21c87a;
-  text-decoration: none;
-}
-
-a:hover {
-  color: #168652;
-  text-decoration: none;
-}
-</style>
-<style>
-div.modalWindowArea {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
-    left: 0px;
-
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-
-    background-color: rgba(0, 0, 0, 0.6);
-}
-
-div.out-bounds-of-dialog {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
-    left: 0px;
-
-    z-index: 9997;
-}
-
-div.dialog {
-    display: none;
-
-    padding: 30px;
-    background-color: #ffffff;
-
-    z-index: 9998;
-}
-</style>
-
 <body>
-    <div class='container'>
-        <div class='source'>
-            <div>Source</div>
-            <textarea id='previewSource'></textarea>
+    <div class='main fullscreen vertical-align-flex'>
+        <div class='main-view'>
+            <div class='source vertical-align-flex hide-only-mobile'>
+                <div class='show-only-pc'>Source</div>
+                <textarea id='previewSource'></textarea>
+            </div>
+
+            <div class='preview vertical-align-flex'>
+                <div class='show-only-pc'>Preview</div>
+                <div class='menu-tab-list'>
+                    <a href='javascript:;' class='menu-tab show-font-menu selected-menu-tab'>文字</a>
+                    <a href='javascript:;' class='menu-tab show-insert-menu'>挿入</a>
+                    <a href='javascript:;' class='menu-tab show-edit-table-menu'>表</a>
+                </div>
+                <div class='menu-list'>
+                    <div class='font-menu'>
+                        <button class='font-small'><span class='small'>小</span></button>
+                        <button class='font-normal'>並</button>
+                        <button class='font-medium'>中</button>
+                        <button class='font-big'>大</button>
+
+                        <button class='font-strong'><strong>太字</strong></button>
+                        <button class='font-strike'><span class='strike'>打消</span></button>
+                        <button class='font-underline'><span class='underline'>下線</span></button>
+
+                        文字色<input type='color' class='font-color' value='#000000'>
+                        <button class='font-change-color'>この色にする</button>
+                    </div>
+                    <div class='insert-menu' style='display:none;'>
+                        <button class='insert-h3'>見出を追加</button>
+                        <button class='insert-hr'>罫線を追加</button>
+
+                        <button class='insert-table'>表を追加</button>
+                        <button class='insert-link'>リンクを追加</button>
+                        <button class='insert-image'>画像を追加</button>
+                    </div>
+                    <div class='edit-table-menu' style='display:none;'>
+                        <button class='add-row'>行を追加</button>
+                        <button class='remove-row'>行を削除</button>
+                        <button class='add-col'>列を追加</button>
+                        <button class='remove-col'>列を削除</button>
+                    </div>
+                </div>
+                <div id='previewArea' contenteditable></div>
+            </div>
         </div>
 
-        <div class='preview'>
-            <div>Preview</div>
-            <div class='menu-tab-list'>
-                <a href='javascript:;' class='menu-tab show-font-menu selected-menu-tab'>文字</a>
-                <a href='javascript:;' class='menu-tab show-insert-menu'>挿入</a>
-                <a href='javascript:;' class='menu-tab show-edit-table-menu'>表</a>
-            </div>
-            <div class='menu-list'>
-                <div class='font-menu'>
-                    <button class='font-small'><span class='small'>小</span></button>
-                    <button class='font-normal'>並</button>
-                    <button class='font-medium'>中</button>
-                    <button class='font-big'>大</button>
-
-                    <button class='font-strong'><strong>太字</strong></button>
-                    <button class='font-strike'><span class='strike'>打消</span></button>
-                    <button class='font-underline'><span class='underline'>下線</span></button>
-
-                    文字色<input type='color' class='font-color' value='#000000'></input>
-                    <button class='font-change-color'>この色にする</button>
-                </div>
-                <div class='insert-menu' style='display:none;'>
-                    <button class='insert-h3'>見出を追加</button>
-                    <button class='insert-hr'>罫線を追加</button>
-
-                    <button class='insert-table'>表を追加</button>
-                    <button class='insert-link'>リンクを追加</button>
-                    <button class='insert-image'>画像を追加</button>
-                </div>
-                <div class='edit-table-menu' style='display:none;'>
-                    <button class='add-row'>行を追加</button>
-                    <button class='remove-row'>行を削除</button>
-                    <button class='add-col'>列を追加</button>
-                    <button class='remove-col'>列を削除</button>
-                </div>
-            </div>
-            <div id='previewArea' contenteditable></div>
+        <div class='view-tab-list show-only-mobile'>
+            <a href='javascript:;' class='view-tab show-source'>Source</a>
+            <a href='javascript:;' class='view-tab selected-view-tab show-preview'>Preview</a>
         </div>
     </div>
 
-    <div class='modalWindowArea'>
+    <div class='modalWindowArea fullscreen'>
         <div class='out-bounds-of-dialog'></div>
         <div class='create-table-dialog dialog'>
             表の挿入
             <div>
-                行数 <input id='rowsNum' type='number' value='1'></input>
+                行数 <input id='rowsNum' type='number' value='1'>
             </div>
             <div>
-                列数 <input id='colsNum' type='number' value='1'></input>
+                列数 <input id='colsNum' type='number' value='1'>
             </div>
             <div style='text-align: right'>
                 <button class='accept-button'>OK</button>
@@ -373,10 +384,10 @@ div.dialog {
         <div class='create-link-dialog dialog'>
             リンクの挿入
             <div>
-                リンク先 <input id='linkReference' type='text'></input>
+                リンク先 <input id='linkReference' type='text'>
             </div>
             <div>
-                リンクテキスト <input id='linkText' type='text'></input>
+                リンクテキスト <input id='linkText' type='text'>
             </div>
             <div style='text-align: right'>
                 <button class='accept-button'>OK</button>
@@ -385,631 +396,667 @@ div.dialog {
         <div class='create-image-dialog dialog'>
             画像の挿入
             <div>
-                画像リンク <input id='imageLink' type='text'></input>
+                画像リンク <input id='imageLink' type='text'>
             </div>
             <div style='text-align: right'>
                 <button class='accept-button'>OK</button>
             </div>
         </div>
     </div>
-</body>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script type='text/javascript'>
-// ぱとぇタグの変換表
-const patoleTagList = {
-    '[リンク:': '<a href="',
-    ':リンク]': '" target="_blank" rel="noopener noreferrer">',
-    '[/リンク]': '</a>',
 
-    '[画像:': '<img src="',
-    ':画像]': '">',
-    '[/画像]': '</img>',
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type='text/javascript'>
+        // ぱとぇタグの変換表
+        const patoleTagList = {
+            '[リンク:': '<a href="',
+            ':リンク]': '" target="_blank" rel="noopener noreferrer">',
+            '[/リンク]': '</a>',
 
-    /* '[赤]': '<span class="red">',
-    '[/赤]': '</span>',
-    '[橙]': '<span class="orange">',
-    '[/橙]': '</span>',
-    '[水色]': '<span class="water">',
-    '[/水色]': '</span>',
-    '[青]': '<span class="blue">',
-    '[/青]': '</span>',
-    '[黄緑]': '<span class="yellowgreen">',
-    '[/黄緑]': '</span>',
-    '[黄]': '<span class="yellow">',
-    '[/黄]': '</span>',
-    '[緑]': '<span class="green">',
-    '[/緑]': '</span>',
-    '[紫]': '<span class="purple">',
-    '[/紫]': '</span>',
-    '[桃]': '<span class="pink">',
-    '[/桃]': '</span>',
-    '[灰]': '<span class="gray">',
-    '[/灰]': '</span>',
-    '[色:': '<span style="color:',
-    ':色]': '">',
-    '[/色]': '</span>', */
+            '[画像:': '<img src="',
+            ':画像]': '">',
+            '[/画像]': '</img>',
 
-    '[赤]': '<font color="#FF0000">',
-    '[/赤]': '</font>',
-    '[橙]': '<font color="#FF9900">',
-    '[/橙]': '</font>',
-    '[水色]': '<font color="#00FFFF">',
-    '[/水色]': '</font>',
-    '[青]': '<font color="#0000FF">',
-    '[/青]': '</font>',
-    '[黄緑]': '<font color="#00FF00">',
-    '[/黄緑]': '</font>',
-    '[黄]': '<font color="#FFFF00">',
-    '[/黄]': '</font>',
-    '[緑]': '<font color="#339900">',
-    '[/緑]': '</font>',
-    '[紫]': '<font color="#6633CC">',
-    '[/紫]': '</font>',
-    '[桃]': '<font color="#FF66FF">',
-    '[/桃]': '</font>',
-    '[灰]': '<font color="#999999">',
-    '[/灰]': '</font>',
-    '[色:': '<font color="',
-    ':色]': '">',
-    '[/色]': '</font>',
+            /* '[赤]': '<span class="red">',
+            '[/赤]': '</span>',
+            '[橙]': '<span class="orange">',
+            '[/橙]': '</span>',
+            '[水色]': '<span class="water">',
+            '[/水色]': '</span>',
+            '[青]': '<span class="blue">',
+            '[/青]': '</span>',
+            '[黄緑]': '<span class="yellowgreen">',
+            '[/黄緑]': '</span>',
+            '[黄]': '<span class="yellow">',
+            '[/黄]': '</span>',
+            '[緑]': '<span class="green">',
+            '[/緑]': '</span>',
+            '[紫]': '<span class="purple">',
+            '[/紫]': '</span>',
+            '[桃]': '<span class="pink">',
+            '[/桃]': '</span>',
+            '[灰]': '<span class="gray">',
+            '[/灰]': '</span>',
+            '[色:': '<span style="color:',
+            ':色]': '">',
+            '[/色]': '</span>', */
 
-    /* '[大]': '<span class="big">',
-    '[/大]': '</span>',
-    '[中]': '<span class="medium">',
-    '[/中]': '</span>',
-    '[小]': '<span class="small">',
-    '[/小]': '</span>', */
+            '[赤]': '<font color="#FF0000">',
+            '[/赤]': '</font>',
+            '[橙]': '<font color="#FF9900">',
+            '[/橙]': '</font>',
+            '[水色]': '<font color="#00FFFF">',
+            '[/水色]': '</font>',
+            '[青]': '<font color="#0000FF">',
+            '[/青]': '</font>',
+            '[黄緑]': '<font color="#00FF00">',
+            '[/黄緑]': '</font>',
+            '[黄]': '<font color="#FFFF00">',
+            '[/黄]': '</font>',
+            '[緑]': '<font color="#339900">',
+            '[/緑]': '</font>',
+            '[紫]': '<font color="#6633CC">',
+            '[/紫]': '</font>',
+            '[桃]': '<font color="#FF66FF">',
+            '[/桃]': '</font>',
+            '[灰]': '<font color="#999999">',
+            '[/灰]': '</font>',
+            '[色:': '<font color="',
+            ':色]': '">',
+            '[/色]': '</font>',
 
-    '[大]': '<font size="6">',
-    '[/大]': '</font>',
-    '[中]': '<font size="5">',
-    '[/中]': '</font>',
-    '[小]': '<font size="1">',
-    '[/小]': '</font>',
+            /* '[大]': '<span class="big">',
+            '[/大]': '</span>',
+            '[中]': '<span class="medium">',
+            '[/中]': '</span>',
+            '[小]': '<span class="small">',
+            '[/小]': '</span>', */
 
-    /* '[打消]': '<span class="strike">',
-    '[/打消]': '</span>',
-    '[下線]': '<span class="underline">',
-    '[/下線]': '</span>', 
-    '[太]': '<strong>',
-    '[/太]': '</strong>', */
+            '[大]': '<font size="6">',
+            '[/大]': '</font>',
+            '[中]': '<font size="5">',
+            '[/中]': '</font>',
+            '[小]': '<font size="1">',
+            '[/小]': '</font>',
 
-    '[打消]': '<strike>',
-    '[/打消]': '</strike>',
-    '[下線]': '<u>',
-    '[/下線]': '</u>',
-    '[太]': '<b>',
-    '[/太]': '</b>',
+            /* '[打消]': '<span class="strike">',
+            '[/打消]': '</span>',
+            '[下線]': '<span class="underline">',
+            '[/下線]': '</span>',
+            '[太]': '<strong>',
+            '[/太]': '</strong>', */
 
-    '[旧見出]': '<h2>',
-    '[/旧見出]': '</h2>',
-    '[小見出]': '<h3>',
-    '[/小見出]': '</h3>',
-    '[見出]': '<div><h4>',
-    '[/見出]': '</h4></div>',
+            '[打消]': '<strike>',
+            '[/打消]': '</strike>',
+            '[下線]': '<u>',
+            '[/下線]': '</u>',
+            '[太]': '<b>',
+            '[/太]': '</b>',
 
-    '[テーブル]': '<table>',
-    '[/テーブル]': '</table>',
-    '[th]': '<th>',
-    '[/th]': '</th>',
-    '[tr]': '<tr>',
-    '[/tr]': '</tr>',
-    '[td]': '<td>',
-    '[/td]': '</td>',
+            '[旧見出]': '<h2>',
+            '[/旧見出]': '</h2>',
+            '[小見出]': '<h3>',
+            '[/小見出]': '</h3>',
+            '[見出]': '<div><h4>',
+            '[/見出]': '</h4></div>',
 
-    '[pre]': '<pre>',
-    '[/pre]': '</pre>',
-    '[罫線]': '<hr>',
-    '[/罫線]': ' ',
+            '[テーブル]': '<table>',
+            '[/テーブル]': '</table>',
+            '[th]': '<th>',
+            '[/th]': '</th>',
+            '[tr]': '<tr>',
+            '[/tr]': '</tr>',
+            '[td]': '<td>',
+            '[/td]': '</td>',
 
-    '[改行]': '<br>'
-};
+            '[pre]': '<pre>',
+            '[/pre]': '</pre>',
+            '[罫線]': '<hr>',
+            '[/罫線]': ' ',
 
-const HTMLTagList = {
-    'A': function (node) { return [ '[リンク:' + node.href + ':リンク]', '[/リンク]' ]; },
-    'IMG': function (node) { return [ '[画像:' + node.src + ':画像]', '[/画像]' ]; },
-
-    'H2': function () { return [ '[旧見出]', '[/旧見出]' ]; },
-    'H3': function () { return [ '[小見出]', '[/小見出]' ]; },
-
-    'TABLE': function () { return [ '[テーブル]', '[/テーブル]' ]; },
-    'TR': function () { return [ '[tr]', '[/tr]' ]; },
-    'TH': function () { return [ '[th]', '[/th]' ]; },
-    'TD': function () { return [ '[td]', '[/td]' ]; },
-
-    'PRE': function () { return [ '[pre]', '[/pre]' ]; },
-    'HR': function () { return [ '[罫線]', '[/罫線]' ]; },
-    'BR': function () { return [ '\n', '' ]; },
-    'NEWLINE': function () { return [ ' _\n', '' ]; },
-
-    'SPAN': function (node) {
-        const classList = {
-            'red': ['[赤]', '[/赤]'],
-            'orange': ['[橙]', '[/橙]'],
-            'water': ['[水色]', '[/水色]'],
-            'blue': ['[青]', '[/青]'],
-            'yellowgreen': ['[黄緑]', '[/黄緑]'],
-            'yellow': ['[黄]', '[/黄]'],
-            'green': ['[緑]', '[/緑]'],
-            'purple': ['[紫]', '[/紫]'],
-            'pink': ['[桃]', '[/桃]'],
-            'gray': ['[灰]', '[/灰]'],
-
-            'big': ['[大]', '[/大]'],
-            'mediam': ['[中]', '[/中]'],
-            'small': ['[小]', '[/小]'],
-
-            'strike': ['[打消]', '[/打消]'],
-            'underline': ['[下線]', '[/下線]'],
+            '[改行]': '\n'
         };
 
-        if (node.className) {
-            return classList[node.className] || [ '', '' ];
-        } else if (node.style && node.style.color) {
-            // from https://stackoverflow.com/questions/1740700/how-to-get-hex-color-value-rather-than-rgb-value
-            const hexColorFromRGBColor = function (rgb) {
-                if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
-
-                rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-                const hex = function (x) { return ('0' + parseInt(x).toString(16)).slice(-2); };
-
-                return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
-            };
-
-            const ignoredColors = [ 
-                '#212529' // ぱとぇさんの掲示板のデフォルトの文字色
-            ];
-
-            let fontColor = hexColorFromRGBColor(node.style.color);
-
-            if (!ignoredColors.includes(fontColor)) {
-                return [ '[色:' + hexColorFromRGBColor(node.style.color) + ':色]', '[/色]' ];
-            }
-        }
-
-        return [ '', '' ];
-    },
-
-    // ぱとぇさん側のタグのサポート
-    'H4': function () { return [ '[見出]', '[/見出]' ]; },
-
-    'B': function () { return [ '[太]', '[/太]' ]; },
-    'STRONG': function () { return [ '[太]', '[/太]' ]; },
-
-    'STRIKE': function () { return [ '[打消]', '[/打消]' ]; },
-    'S': function () { return [ '[打消]', '[/打消]' ]; },
-    'DEL': function () { return [ '[打消]', '[/打消]' ]; },
-
-    'U': function () { return [ '[下線]', '[/下線]' ]; },
-
-    'FONT': function (node) {
-        let tags = [ [], [] ];
-
-        if (node.hasAttribute('size')) {
-            let fontSize = node.getAttribute('size');
-
-            const fontSizeList = {
-                '1': ['[小]', '[/小]'],
-                '5': ['[中]', '[/中]'],
-                '6': ['[大]', '[/大]'],
-            };
-
-            let addedTags = fontSizeList[fontSize] || [ '', '' ];
-            tags[0].push(addedTags[0]);
-            tags[1].push(addedTags[1]);
-        }
-
-        if (node.hasAttribute('color')) {
-            let fontColor = node.getAttribute('color');
-
-            const knownColors = {
-                '#FF0000': ['[赤]', '[/赤]'],
-                '#FF9900': ['[橙]', '[/橙]'],
-                '#00FFFF': ['[水色]', '[/水色]'],
-                '#00FFFF': ['[青]', '[/青]'],
-                '#00FF00': ['[黄緑]', '[/黄緑]'],
-                '#FFFF00': ['[黄]', '[/黄]'],
-                '#339900': ['[緑]', '[/緑]'],
-                '#6633CC': ['[紫]', '[/紫]'],
-                '#FF66FF': ['[桃]', '[/桃]'],
-                '#999999': ['[灰]', '[/灰]'],
-            };
-
-            let addedTags =  knownColors[fontColor] || [ '[色:' + fontColor + ':色]', '[/色]' ];
-            tags[0].push(addedTags[0]);
-            tags[1].push(addedTags[1]);
-        }
-
-        return [ 
-            tags[0].reduce(function (accumulator, currentValue) { return accumulator + currentValue; }, ''),
-            tags[1].reduce(function (accumulator, currentValue) { return currentValue + accumulator; }, '')
-        ];
-    },
-};
-</script>
-
-<script type='text/javascript'>
-const updatePreview = function (inputText) {
-    let previousScroll = $('#previewArea').scrollTop();
-
-    // htmlエスケープ
-    const escapeList = {
-        '&': '&amp;',
-        "'": '&#x27;',
-        '"': '&quot;',
-        '<': '&lt;',
-        '>': '&gt;'
-    };
-
-    let escapedText = inputText.replace(/[&<>"']/g, function (match) { return escapeList[match]; }); 
-
-    const replacer = function (match, p1, p2, p3) {
-        if ((p1 === '[[' || p1 === '::') && (p3 === ']]' || p3 === '::')) {
-            return [p1[0], p2, p3[0]].join('');
-        } else {
-            return patoleTagList[match] || match;
-        }
-    };
-
-    let taggedText = escapedText.replace(
-        /(\[{1,2})([^:\[\]\s]+)([:\]]{1,2})/g,
-        replacer
-    );
-    // /([:\[]{1,2})([^:\[\]]+)([:\]]{1,2})/g としても
-    // :**]のタグがうまく置換できないので別に処理
-    taggedText = taggedText.replace(
-        /(:{1,2})([^:\[\]\s]+)(\]{1,2})/g,
-        replacer
-    );
-
-    // 改行の後始末
-    let arrangedText = taggedText.replace(/ _\n/g, '<newline></newline>');
-    arrangedText = arrangedText.replace(/\n/g, '<br>');
-    $('#previewArea').html(arrangedText);
-
-    window.setTimeout(function () { 
-        $('#previewArea').scrollTop(previousScroll);
-    }, 500);
-};
-
-const updateSource = function (node) {
-    const replacer = function (match, p1, p2, p3) {
-        if (patoleTagList[match]) {
-            return p1 + match + p3;
-        } else {
-            return match;
-        }
-    };
-
-    const stringify = function (parentNode) {
-        switch (parentNode.nodeType) {
-            case Node.ELEMENT_NODE: {
-                let tagConverter = HTMLTagList[parentNode.tagName] || (function (n) { return [ '', '' ]; });
-                let tag = tagConverter(parentNode);
-                let childList = $(parentNode.childNodes).get();
-                let childStringified = childList.map(function (n) { return stringify(n); });
-                return tag[0] + childStringified.join('') + tag[1];
-            }
-            case Node.TEXT_NODE: {
-                let escapedText = parentNode.nodeValue.replace(
-                    /(\[)([^:\[\]\s]+)([:\]])/g,
-                    replacer
-                );
-
-                // :**]のタグがうまく置換できないので別に処理
-                escapedText = escapedText.replace(
-                    /(\:)([^:\[\]\s]+)(\])/g,
-                    replacer
-                );
-
-                return escapedText;
-            }
-        }
-    };
-
-    $('#previewSource').val(stringify(node));
-}
-</script>
-
-<script type='text/javascript'>
-const bindMenuButtonEvents = function () {
-    // メニュータブのセットアップ
-    $('.show-font-menu').on('click', function (e) {
-        $('.menu-tab').removeClass('selected-menu-tab');
-        $(e.target).addClass('selected-menu-tab');
-
-        $('div.menu-list > div').hide();
-        $('div.font-menu').show();
-    });
-
-    $('.show-insert-menu').on('click', function (e) {
-        $('.menu-tab').removeClass('selected-menu-tab');
-        $(e.target).addClass('selected-menu-tab');
-
-        $('div.menu-list > div').hide();
-        $('div.insert-menu').show();
-    });
-
-    $('.show-edit-table-menu').on('click', function (e) {
-        $('.menu-tab').removeClass('selected-menu-tab');
-        $(e.target).addClass('selected-menu-tab');
-
-        $('div.menu-list > div').hide();
-        $('div.edit-table-menu').show();
-    });
-
-    const changeSelectedTextStyle = function (styleName, arg) {
-        let selection = window.getSelection();
-
-        let selectStartElement = $(selection.anchorNode);
-        let selectEndElement = $(selection.focusNode);
-
-        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
-        document.execCommand(styleName, false, arg);
-        updateSource($('#previewArea').get(0));
-    };
-
-    const execCommand = changeSelectedTextStyle;
-
-    let preservedSelection = null;
-
-    const showDialog = function (dialogName) {
-        $('div.modalWindowArea').css('display', 'flex');
-        $(dialogName).show();
-
-        let currentSelection = window.getSelection();
-
-        if (currentSelection.rangeCount > 0) {
-            preservedSelection = currentSelection.getRangeAt(0);
-        }
-    };
-
-    const reloadSelection = function () {
-        let currentSelection = window.getSelection();
-        currentSelection.removeAllRanges();
-        currentSelection.addRange(preservedSelection);
-    };
-
-    $('div.out-bounds-of-dialog, div.dialog button.accept-button').on('click', function (e) {
-        $('div.modalWindowArea, div.dialog').hide();
-    });
-
-    // ダイアログのセットアップ
-    $('div.create-table-dialog button.accept-button').on('click', function (e) {
-        reloadSelection();
-
-        let addedHTML = '<table>';
-        let rowsNum = $('#rowsNum').val();
-        let colsNum = $('#colsNum').val();
-
-        let colsHTML = '';
-
-        for (let c = 0; c < colsNum; c++) {
-            colsHTML += '<td></td>';
-        }
-
-        for (let r = 0; r < rowsNum; r++) {
-            addedHTML += '<tr>';
-            addedHTML += colsHTML;
-            addedHTML += '</tr>';
-        }
-
-        addedHTML += '</table>';
-
-        execCommand('insertHTML', addedHTML);
-    });
-
-    $('div.create-link-dialog button.accept-button').on('click', function (e) {
-        reloadSelection();
-        execCommand('createLink', $('#linkReference').val());
-    });
-
-    $('div.create-image-dialog button.accept-button').on('click', function (e) {
-        reloadSelection();
-        execCommand('insertImage', $('#imageLink').val());
-    });
-
-    // メニューボタンのセットアップ
-    $('button.font-small').on('click', function (e) {
-        changeSelectedTextStyle('fontSize', 1);
-    });
-
-    $('button.font-normal').on('click', function (e) {
-        changeSelectedTextStyle('fontSize', 2);
-    });
-
-    $('button.font-medium').on('click', function (e) {
-        changeSelectedTextStyle('fontSize', 5);
-    });
-
-    $('button.font-big').on('click', function (e) {
-        changeSelectedTextStyle('fontSize', 6);
-    });
-
-    $('button.font-strong').on('click', function (e) {
-        changeSelectedTextStyle('bold');
-    });
-
-    $('button.font-strike').on('click', function (e) {
-        changeSelectedTextStyle('strikeThrough');
-    });
-
-    $('button.font-underline').on('click', function (e) {
-        changeSelectedTextStyle('underline');
-    });
-
-    $('input.font-color').on('change', function (e) {
-        changeSelectedTextStyle('foreColor', e.target.value);
-    });
-
-    $('button.font-change-color').on('click', function (e) {
-        changeSelectedTextStyle('foreColor', $('input.font-color').val());
-    });
-
-    $('button.insert-h3').on('click', function (e) {
-        execCommand('formatBlock', '<h4>');
-    });
-
-    $('button.insert-hr').on('click', function (e) {
-        execCommand('insertHorizontalRule');
-    });
-
-    $('button.insert-table').on('click', function (e) {
-        showDialog('.create-table-dialog');
-    });
-
-    $('button.insert-link').on('click', function (e) {
-        showDialog('.create-link-dialog');
-    });
-
-    $('button.insert-image').on('click', function (e) {
-        showDialog('.create-image-dialog');
-    });
-
-    $('button.add-row').on('click', function (e) {
-        let selection = window.getSelection();
-
-        let selectStartElement = $(selection.anchorNode).closest('tr');
-        let selectEndElement = $(selection.focusNode).closest('tr');
-
-        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
-        // 同じテーブルでなければ列を挿入できない
-        if (!selectStartElement.parent().is(selectEndElement.parent())) return;
-         
-        selectEndElement.after(selectEndElement.clone());
-
-        updateSource($('#previewArea').get(0));
-    });
-
-    $('button.remove-row').on('click', function (e) {
-        let selection = window.getSelection();
-
-        let selectStartElement = $(selection.anchorNode).closest('tr');
-        let selectEndElement = $(selection.focusNode).closest('tr');
-
-        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
-        if (!selectStartElement.parent().is(selectEndElement.parent())) return;
-
-        let nextRemoved = selectStartElement;
-
-        while (!nextRemoved.is(selectEndElement)) {
-            let removed = nextRemoved;
-            nextRemoved = removed.next();
-            removed.remove();
-        }
-
-        selectEndElement.remove();
-
-        updateSource($('#previewArea').get(0));
-    });
-
-    $('button.add-col').on('click', function (e) {
-        let selection = window.getSelection();
-
-        let selectStartElement = $(selection.anchorNode).closest('td');
-        let selectEndElement = $(selection.focusNode).closest('td');
-
-        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
-        if (!selectStartElement.parent().is(selectEndElement.parent())) return;
-
-        let colObjects = selectStartElement.parent().children();
-        let colIndex = colObjects.index(selectEndElement);
-
-        let tableObject = selectEndElement.closest('tbody');
-        let rowObjects = tableObject.children();
-
-        rowObjects.each(function (index, element) {
-            let col = $(element).children().get(colIndex);
-            $(col).after($(col).clone());
-        });
-
-        updateSource($('#previewArea').get(0));
-    });
-
-    $('button.remove-col').on('click', function (e) {
-        let selection = window.getSelection();
-
-        let selectStartElement = $(selection.anchorNode).closest('td');
-        let selectEndElement = $(selection.focusNode).closest('td');
-
-        if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
-        if (!selectStartElement.parent().is(selectEndElement.parent())) return;
-
-        let colObjects = selectStartElement.parent().children();
-        let colStartIndex = colObjects.index(selectStartElement);
-        let colEndIndex = colObjects.index(selectEndElement);
-
-        let tableObject = selectStartElement.closest('tbody');
-        let rowObjects = tableObject.children();
-
-        rowObjects.each(function (index, element) {
-            $(element).children().slice(colStartIndex, colEndIndex + 1).remove();
-        });
-
-        updateSource($('#previewArea').get(0));
-    });
-};
-</script>
-<script type='text/javascript'>
-    $(document).ready(function () {
-        let shouldUpdate = true;
-        let timerID = undefined;
-
-        $('#previewSource').on('input', function (e) {
-            if (shouldUpdate === false) {
-                window.clearTimeout(timerID);
-                timerID = window.setTimeout(function () { 
-                    shouldUpdate = true;   
-                    timerID = undefined;                
-                    updatePreview(e.target.value);                
-                }, 1000);
-            } else {
-                shouldUpdate = false;
-                timerID = window.setTimeout(function () { 
-                    shouldUpdate = true;
-                    timerID = undefined;
-                }, 1000);
-
-                updatePreview(e.target.value);
-            }
-        });
-
-        $('#previewArea').on('input', function (e) {
-            updateSource($('#previewArea').get(0));
-        }); 
-
-		$('#previewArea').on('textinput', function (e) {
-            updateSource($('#previewArea').get(0));
-        }); 
-
-        $('#previewArea').on('paste', function (e) {
+        const HTMLTagList = {
+            'A': function (node) { return ['[リンク:' + node.href + ':リンク]', '[/リンク]']; },
+            'IMG': function (node) { return ['[画像:' + node.src + ':画像]', '[/画像]']; },
+
+            'H2': function () { return ['[旧見出]', '[/旧見出]']; },
+            'H3': function () { return ['[小見出]', '[/小見出]']; },
+
+            'TABLE': function () { return ['[テーブル]', '[/テーブル]']; },
+            'TR': function () { return ['[tr]', '[/tr]']; },
+            'TH': function () { return ['[th]', '[/th]']; },
+            'TD': function () { return ['[td]', '[/td]']; },
+
+            'PRE': function () { return ['[pre]', '[/pre]']; },
+            'HR': function () { return ['[罫線]', '[/罫線]']; },
+            'BR': function () { return ['\n', '']; },
+            'NEWLINE': function () { return [' _\n', '']; },
+
+            'SPAN': function (node) {
+                const classList = {
+                    'red': ['[赤]', '[/赤]'],
+                    'orange': ['[橙]', '[/橙]'],
+                    'water': ['[水色]', '[/水色]'],
+                    'blue': ['[青]', '[/青]'],
+                    'yellowgreen': ['[黄緑]', '[/黄緑]'],
+                    'yellow': ['[黄]', '[/黄]'],
+                    'green': ['[緑]', '[/緑]'],
+                    'purple': ['[紫]', '[/紫]'],
+                    'pink': ['[桃]', '[/桃]'],
+                    'gray': ['[灰]', '[/灰]'],
+
+                    'big': ['[大]', '[/大]'],
+                    'mediam': ['[中]', '[/中]'],
+                    'small': ['[小]', '[/小]'],
+
+                    'strike': ['[打消]', '[/打消]'],
+                    'underline': ['[下線]', '[/下線]'],
+                };
+
+                if (node.className) {
+                    return classList[node.className] || ['', ''];
+                } else if (node.style && node.style.color) {
+                    // from https://stackoverflow.com/questions/1740700/how-to-get-hex-color-value-rather-than-rgb-value
+                    const hexColorFromRGBColor = function (rgb) {
+                        if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
+
+                        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+                        const hex = function (x) { return ('0' + parseInt(x).toString(16)).slice(-2); };
+
+                        return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+                    };
+
+                    const ignoredColors = [
+                        '#212529' // ぱとぇさんの掲示板のデフォルトの文字色
+                    ];
+
+                    let fontColor = hexColorFromRGBColor(node.style.color);
+
+                    if (!ignoredColors.includes(fontColor)) {
+                        return ['[色:' + hexColorFromRGBColor(node.style.color) + ':色]', '[/色]'];
+                    }
+                }
+
+                return ['', ''];
+            },
+
+            'P': function (node) {
+                let previousElement = node.previousSibling;
+
+                let isTextNode = function (node) {
+                    return node.nodeType === Node.TEXT_NODE;
+                };
+
+                let isParagraphNode = function (node) {
+                    return previousElement.nodeType === Node.ELEMENT_NODE && previousElement.tagName === 'P';
+                };
+
+                return (previousElement && (isTextNode(previousElement) || isParagraphNode(previousElement))) ? ['\n', ''] : ['', ''];
+            },
+
+            // ぱとぇさん側のタグのサポート
+            'H4': function () { return ['[見出]', '[/見出]']; },
+
+            'B': function () { return ['[太]', '[/太]']; },
+            'STRONG': function () { return ['[太]', '[/太]']; },
+
+            'STRIKE': function () { return ['[打消]', '[/打消]']; },
+            'S': function () { return ['[打消]', '[/打消]']; },
+            'DEL': function () { return ['[打消]', '[/打消]']; },
+
+            'U': function () { return ['[下線]', '[/下線]']; },
+
+            'FONT': function (node) {
+                let tags = [[], []];
+
+                if (node.hasAttribute('size')) {
+                    let fontSize = node.getAttribute('size');
+
+                    const fontSizeList = {
+                        '1': ['[小]', '[/小]'],
+                        '5': ['[中]', '[/中]'],
+                        '6': ['[大]', '[/大]'],
+                    };
+
+                    let addedTags = fontSizeList[fontSize] || ['', ''];
+                    tags[0].push(addedTags[0]);
+                    tags[1].push(addedTags[1]);
+                }
+
+                if (node.hasAttribute('color')) {
+                    let fontColor = node.getAttribute('color');
+
+                    const knownColors = {
+                        '#FF0000': ['[赤]', '[/赤]'],
+                        '#FF9900': ['[橙]', '[/橙]'],
+                        '#00FFFF': ['[水色]', '[/水色]'],
+                        '#00FFFF': ['[青]', '[/青]'],
+                        '#00FF00': ['[黄緑]', '[/黄緑]'],
+                        '#FFFF00': ['[黄]', '[/黄]'],
+                        '#339900': ['[緑]', '[/緑]'],
+                        '#6633CC': ['[紫]', '[/紫]'],
+                        '#FF66FF': ['[桃]', '[/桃]'],
+                        '#999999': ['[灰]', '[/灰]'],
+                    };
+
+                    let addedTags = knownColors[fontColor] || ['[色:' + fontColor + ':色]', '[/色]'];
+                    tags[0].push(addedTags[0]);
+                    tags[1].push(addedTags[1]);
+                }
+
+                return [
+                    tags[0].reduce(function (accumulator, currentValue) { return accumulator + currentValue; }, ''),
+                    tags[1].reduce(function (accumulator, currentValue) { return currentValue + accumulator; }, '')
+                ];
+            },
+        };
+    </script>
+
+    <script type='text/javascript'>
+        const updatePreview = function (inputText) {
             let previousScroll = $('#previewArea').scrollTop();
-            window.setTimeout(function () { updatePreview($('#previewSource').val()); }, 500);
-            window.setTimeout(function () { $('#previewArea').scrollTop(previousScroll); }, 1000);
 
-            /* e.preventDefault();
-            let pastedHTML = e.originalEvent.clipboardData.getData('text/html');
-            let pastedDOMTree = $(pastedHTML);
+            // htmlエスケープ
+            const escapeList = {
+                '&': '&amp;',
+                "'": '&#x27;',
+                '"': '&quot;',
+                '<': '&lt;',
+                '>': '&gt;'
+            };
 
-            let selection = window.getSelection();
-            if (!selection.rangeCount) return false;
+            let escapedText = inputText.replace(/[&<>"']/g, function (match) { return escapeList[match]; });
 
-            $(pastedDOMTree.get().reverse()).each(function (i, node) {
-                node.style = '';
-                selection.getRangeAt(0).insertNode(node);
+            const replacer = function (match, p1, p2, p3) {
+                if ((p1 === '[[' || p1 === '::') && (p3 === ']]' || p3 === '::')) {
+                    return [p1[0], p2, p3[0]].join('');
+                } else {
+                    return patoleTagList[match] || match;
+                }
+            };
 
-                console.log(node);
+            let taggedText = escapedText.replace(
+                /(\[{1,2})([^:\[\]\s]+)([:\]]{1,2})/g,
+                replacer
+            );
+            // /([:\[]{1,2})([^:\[\]]+)([:\]]{1,2})/g としても
+            // :**]のタグがうまく置換できないので別に処理
+            taggedText = taggedText.replace(
+                /(:{1,2})([^:\[\]\s]+)(\]{1,2})/g,
+                replacer
+            );
+
+            /* const endlineReplacer = function (match, p1) {
+                return [ '<p>', p1, '</p>'].join('');
+            }; */
+
+            // 改行の後始末
+            let arrangedText = taggedText.replace(/ _\n/g, '<newline></newline>');
+            arrangedText = arrangedText.replace(/\n/g, '<br>');
+            $('#previewArea').html(arrangedText);
+
+            window.setTimeout(function () {
+                $('#previewArea').scrollTop(previousScroll);
+            }, 500);
+        };
+
+        const updateSource = function (node) {
+            const replacer = function (match, p1, p2, p3) {
+                if (patoleTagList[match]) {
+                    return p1 + match + p3;
+                } else {
+                    return match;
+                }
+            };
+
+            const stringify = function (parentNode) {
+                switch (parentNode.nodeType) {
+                    case Node.ELEMENT_NODE: {
+                        let tagConverter = HTMLTagList[parentNode.tagName] || (function (n) { return ['', '']; });
+                        let tag = tagConverter(parentNode);
+                        let childList = $(parentNode.childNodes).get();
+                        let childStringified = childList.map(function (n) { return stringify(n); });
+                        return tag[0] + childStringified.join('') + tag[1];
+                    }
+                    case Node.TEXT_NODE: {
+                        let escapedText = parentNode.nodeValue.replace(
+                            /(\[)([^:\[\]\s]+)([:\]])/g,
+                            replacer
+                        );
+
+                        // :**]のタグがうまく置換できないので別に処理
+                        escapedText = escapedText.replace(
+                            /(\:)([^:\[\]\s]+)(\])/g,
+                            replacer
+                        );
+
+                        return escapedText;
+                    }
+                }
+            };
+
+            $('#previewSource').val(stringify(node));
+        }
+    </script>
+
+    <script type='text/javascript'>
+        const bindMenuButtonEvents = function () {
+            // メニュータブのセットアップ
+            $('.show-source').on('click', function (e) {
+                $('.view-tab').removeClass('selected-view-tab');
+                $(e.target).addClass('selected-view-tab');
+
+                $('div.main-view > div').removeClass('hide-only-mobile');
+                $('div.preview').addClass('hide-only-mobile');
             });
 
-            return false; */
+            $('.show-preview').on('click', function (e) {
+                $('.view-tab').removeClass('selected-view-tab');
+                $(e.target).addClass('selected-view-tab');
+
+                $('div.main-view > div').removeClass('hide-only-mobile');
+                $('div.source').addClass('hide-only-mobile');
+            });
+
+            $('.show-font-menu').on('click', function (e) {
+                $('.menu-tab').removeClass('selected-menu-tab');
+                $(e.target).addClass('selected-menu-tab');
+
+                $('div.menu-list > div').hide();
+                $('div.font-menu').show();
+            });
+
+            $('.show-insert-menu').on('click', function (e) {
+                $('.menu-tab').removeClass('selected-menu-tab');
+                $(e.target).addClass('selected-menu-tab');
+
+                $('div.menu-list > div').hide();
+                $('div.insert-menu').show();
+            });
+
+            $('.show-edit-table-menu').on('click', function (e) {
+                $('.menu-tab').removeClass('selected-menu-tab');
+                $(e.target).addClass('selected-menu-tab');
+
+                $('div.menu-list > div').hide();
+                $('div.edit-table-menu').show();
+            });
+
+            const changeSelectedTextStyle = function (styleName, arg) {
+                let selection = window.getSelection();
+
+                let selectStartElement = $(selection.anchorNode);
+                let selectEndElement = $(selection.focusNode);
+
+                if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+                document.execCommand(styleName, false, arg);
+                updateSource($('#previewArea').get(0));
+            };
+
+            const execCommand = changeSelectedTextStyle;
+
+            let preservedSelection = null;
+
+            const showDialog = function (dialogName) {
+                $('div.modalWindowArea').css('display', 'flex');
+                $(dialogName).show();
+
+                let currentSelection = window.getSelection();
+
+                if (currentSelection.rangeCount > 0) {
+                    preservedSelection = currentSelection.getRangeAt(0);
+                }
+            };
+
+            const reloadSelection = function () {
+                let currentSelection = window.getSelection();
+                currentSelection.removeAllRanges();
+                currentSelection.addRange(preservedSelection);
+            };
+
+            $('div.out-bounds-of-dialog, div.dialog button.accept-button').on('click', function (e) {
+                $('div.modalWindowArea, div.dialog').hide();
+            });
+
+            // ダイアログのセットアップ
+            $('div.create-table-dialog button.accept-button').on('click', function (e) {
+                reloadSelection();
+
+                let addedHTML = '<table>';
+                let rowsNum = $('#rowsNum').val();
+                let colsNum = $('#colsNum').val();
+
+                let colsHTML = '';
+
+                for (let c = 0; c < colsNum; c++) {
+                    colsHTML += '<td><p></p></td>';
+                }
+
+                for (let r = 0; r < rowsNum; r++) {
+                    addedHTML += '<tr>';
+                    addedHTML += colsHTML;
+                    addedHTML += '</tr>';
+                }
+
+                addedHTML += '</table>';
+
+                execCommand('insertHTML', addedHTML);
+            });
+
+            $('div.create-link-dialog button.accept-button').on('click', function (e) {
+                reloadSelection();
+                execCommand('createLink', $('#linkReference').val());
+            });
+
+            $('div.create-image-dialog button.accept-button').on('click', function (e) {
+                reloadSelection();
+                execCommand('insertImage', $('#imageLink').val());
+            });
+
+            // メニューボタンのセットアップ
+            $('button.font-small').on('click', function (e) {
+                changeSelectedTextStyle('fontSize', 1);
+            });
+
+            $('button.font-normal').on('click', function (e) {
+                changeSelectedTextStyle('fontSize', 2);
+            });
+
+            $('button.font-medium').on('click', function (e) {
+                changeSelectedTextStyle('fontSize', 5);
+            });
+
+            $('button.font-big').on('click', function (e) {
+                changeSelectedTextStyle('fontSize', 6);
+            });
+
+            $('button.font-strong').on('click', function (e) {
+                changeSelectedTextStyle('bold');
+            });
+
+            $('button.font-strike').on('click', function (e) {
+                changeSelectedTextStyle('strikeThrough');
+            });
+
+            $('button.font-underline').on('click', function (e) {
+                changeSelectedTextStyle('underline');
+            });
+
+            $('input.font-color').on('change', function (e) {
+                changeSelectedTextStyle('foreColor', e.target.value);
+            });
+
+            $('button.font-change-color').on('click', function (e) {
+                changeSelectedTextStyle('foreColor', $('input.font-color').val());
+            });
+
+            $('button.insert-h3').on('click', function (e) {
+                execCommand('formatBlock', '<h4>');
+            });
+
+            $('button.insert-hr').on('click', function (e) {
+                execCommand('insertHorizontalRule');
+            });
+
+            $('button.insert-table').on('click', function (e) {
+                showDialog('.create-table-dialog');
+            });
+
+            $('button.insert-link').on('click', function (e) {
+                showDialog('.create-link-dialog');
+            });
+
+            $('button.insert-image').on('click', function (e) {
+                showDialog('.create-image-dialog');
+            });
+
+            $('button.add-row').on('click', function (e) {
+                let selection = window.getSelection();
+
+                let selectStartElement = $(selection.anchorNode).closest('tr');
+                let selectEndElement = $(selection.focusNode).closest('tr');
+
+                if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+                // 同じテーブルでなければ列を挿入できない
+                if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+                selectEndElement.after(selectEndElement.clone());
+
+                updateSource($('#previewArea').get(0));
+            });
+
+            $('button.remove-row').on('click', function (e) {
+                let selection = window.getSelection();
+
+                let selectStartElement = $(selection.anchorNode).closest('tr');
+                let selectEndElement = $(selection.focusNode).closest('tr');
+
+                if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+                if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+                let nextRemoved = selectStartElement;
+
+                while (!nextRemoved.is(selectEndElement)) {
+                    let removed = nextRemoved;
+                    nextRemoved = removed.next();
+                    removed.remove();
+                }
+
+                selectEndElement.remove();
+
+                updateSource($('#previewArea').get(0));
+            });
+
+            $('button.add-col').on('click', function (e) {
+                let selection = window.getSelection();
+
+                let selectStartElement = $(selection.anchorNode).closest('td');
+                let selectEndElement = $(selection.focusNode).closest('td');
+
+                if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+                if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+                let colObjects = selectStartElement.parent().children();
+                let colIndex = colObjects.index(selectEndElement);
+
+                let tableObject = selectEndElement.closest('tbody');
+                let rowObjects = tableObject.children();
+
+                rowObjects.each(function (index, element) {
+                    let col = $(element).children().get(colIndex);
+                    $(col).after($(col).clone());
+                });
+
+                updateSource($('#previewArea').get(0));
+            });
+
+            $('button.remove-col').on('click', function (e) {
+                let selection = window.getSelection();
+
+                let selectStartElement = $(selection.anchorNode).closest('td');
+                let selectEndElement = $(selection.focusNode).closest('td');
+
+                if (!selectStartElement.closest('#previewArea') || !selectEndElement.closest('#previewArea')) return;
+                if (!selectStartElement.parent().is(selectEndElement.parent())) return;
+
+                let colObjects = selectStartElement.parent().children();
+                let colStartIndex = colObjects.index(selectStartElement);
+                let colEndIndex = colObjects.index(selectEndElement);
+
+                let tableObject = selectStartElement.closest('tbody');
+                let rowObjects = tableObject.children();
+
+                rowObjects.each(function (index, element) {
+                    $(element).children().slice(colStartIndex, colEndIndex + 1).remove();
+                });
+
+                updateSource($('#previewArea').get(0));
+            });
+        };
+    </script>
+    <script type='text/javascript'>
+        $(document).ready(function () {
+            $('div.main').css('min-height', $('div.main').height() + 'px');
+
+            let shouldUpdate = true;
+            let timerID = undefined;
+
+            $('#previewSource').on('input', function (e) {
+                if (shouldUpdate === false) {
+                    window.clearTimeout(timerID);
+                    timerID = window.setTimeout(function () {
+                        shouldUpdate = true;
+                        timerID = undefined;
+                        updatePreview(e.target.value);
+                    }, 1000);
+                } else {
+                    shouldUpdate = false;
+                    timerID = window.setTimeout(function () {
+                        shouldUpdate = true;
+                        timerID = undefined;
+                    }, 1000);
+
+                    updatePreview(e.target.value);
+                }
+            });
+
+            $('#previewArea').on('input', function (e) {
+                updateSource($('#previewArea').get(0));
+            });
+
+            $('#previewArea').on('textinput', function (e) {
+                updateSource($('#previewArea').get(0));
+            });
+
+            $('#previewArea').on('paste', function (e) {
+                let previousScroll = $('#previewArea').scrollTop();
+                window.setTimeout(function () { updatePreview($('#previewSource').val()); }, 500);
+                window.setTimeout(function () { $('#previewArea').scrollTop(previousScroll); }, 1000);
+
+                /* e.preventDefault();
+                let pastedHTML = e.originalEvent.clipboardData.getData('text/html');
+                let pastedDOMTree = $(pastedHTML);
+
+                let selection = window.getSelection();
+                if (!selection.rangeCount) return false;
+
+                $(pastedDOMTree.get().reverse()).each(function (i, node) {
+                    node.style = '';
+                    selection.getRangeAt(0).insertNode(node);
+
+                    console.log(node);
+                });
+
+                return false; */
+            });
+
+            bindMenuButtonEvents();
+
+            // 改行を p に強制する
+            document.execCommand("defaultParagraphSeparator", false, "p");
         });
-
-        bindMenuButtonEvents();
-
-        // 改行を br に強制する
-        document.execCommand("defaultParagraphSeparator", false, "br");
-    });
-</script>
-
+    </script>
+</body>
 </html>
